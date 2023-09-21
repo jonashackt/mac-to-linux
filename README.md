@@ -187,6 +187,25 @@ xhost +
 
 
 
+## Install MacOS in the MacOS Docker container
+
+As we saw the container is starting a bare Mac system in the recovery mode. Without manually reinstalling MacOS, we aren't able to use any software.
+
+But reinstalling MacOS doesn't work out-of-the box inside the container using the wizard, because no disk is available for installation.
+
+Therefore head over to the disk utilities and erase the biggest QEMU harddrive with around 200gb and name it e.g. `MyDockyOSX`.
+
+Then the MacOS install wizard should show the `MyDockyOSX` disk as a possible installation harddrive:
+
+![](mac-os-in-docker-install-wizard.png)
+
+No worries: it's a virtual drive and only grows as needed :)
+
+This actually may take a while!
+
+
+
+
 ## Taming the terminal
 
 https://forum.manjaro.org/t/bash-with-autocomplete-and-fancy-flags/112108

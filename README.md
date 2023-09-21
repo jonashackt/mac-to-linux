@@ -14,4 +14,37 @@ And I remembered my old values of free standards, free software, free choice... 
 
 So as time went by the thought of switching my main machine from Mac to a Linux box got bigger and bigger. Finally I cought myself in reading through laptop tests at https://www.notebookcheck.com :)
 
-# Docker
+
+## Choosing a distro
+
+That one is hard. Because if you ask, everybody yells at you :D 
+
+So beeing a software architect I know the only way to get around the discussions is to define your requirements.
+
+I tried to come up with some:
+
+* Rolling releases: I hate big releases! So I don't want to reinstall my system every year like most of the people are used to from MacOS, Ubuntu, Fedora etc. I want a rolling release distro.
+
+`tbd: more info on distro choosing`
+
+Finally I opted for Manjaro Linux https://manjaro.org/, which is based on Arch Linux.
+
+
+## Docker
+
+Is there a way to install and use Docker on Linux? Yes I know: Linux containers were invented ON Linux. So why do we need Docker at all?
+
+But having the ease of use of my beloved command line tooling would be great to make the switch as easy as possible.
+
+There seems to be kind of an semi official Docker release from the creators (see https://docs.docker.com/desktop/install/archlinux/). But the problem is, the installation is [based on a binary you need to update manually](https://docs.docker.com/engine/install/binaries/#install-daemon-and-client-binaries-on-linux) - wow, in 2023?! 
+
+But luckily we can simply use the power of the [Arch User Repository (AUR)](https://wiki.archlinux.org/title/docker#Installation) - and install Docker via the following commands:
+
+```
+pamac install docker
+systemctl start docker.service
+```
+
+That should be everything to fire up our first Docker container on Linux:
+
+`docker run -it --rm archlinux bash -c "echo hello world"`

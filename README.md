@@ -47,4 +47,73 @@ systemctl start docker.service
 
 That should be everything to fire up our first Docker container on Linux:
 
-`docker run -it --rm archlinux bash -c "echo hello world"`
+`sudo docker run -it --rm archlinux bash -c "echo hello world"`
+
+
+## MacOS on Linux
+
+You may already guessed it: I will need MacOS for some time to follow - just to be able migrate some workflows I created over all those years. And also to use Samsung Smart Switch, my tax software and others. So is there a problem to run MacOS virtualized on Linux?
+
+First I thought about using VirtualBox to do the job - but then I read statements like: "It could work (after many crazy configuration steps) - but then you shouldn't do an upgrade ever, since it may stop working right after the update". What...?! OMG.
+
+But then I had an idea: Why not use containers to do the job? And a quick google search got me to https://github.com/sickcodes/Docker-OSX 
+
+Let's try this out! First we need to [get some prerequisites ready](https://github.com/sickcodes/Docker-OSX?utm_source=pocket_saves#initial-setup):
+
+> Before you do anything else, you will need to turn on hardware virtualization in your BIOS.
+
+Now if you have hardware virtualization activated, we need to install some packages:
+
+```
+sudo pamac install qemu libvirt qemu-desktop dnsmasq virt-manager bridge-utils flex bison iptables-nft edk2-ovmf
+```
+
+Since pamac [will prompt you for optional dependencies](https://www.reddit.com/r/archlinux/comments/1z9y3l/install_optional_dependencies/), I choosed `none` and used `2:  qemu-desktop  8.1.0-2  extra` as the QEMU provider.
+
+Now we also need to enable libvirt and load the KVM kernel module:
+
+```
+sudo systemctl enable --now libvirtd
+sudo systemctl enable --now virtlogd
+
+echo 1 | sudo tee /sys/module/kvm/parameters/ignore_msrs
+
+sudo modprobe kvm
+```
+
+Finally we should be able to run a MacOS Docker container (like [Monterey](https://github.com/sickcodes/Docker-OSX#monterey-) or [Ventura](https://github.com/sickcodes/Docker-OSX#ventura-)):
+
+```
+sudo docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    -e GENERATE_UNIQUE=true \
+    -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
+    sickcodes/docker-osx:monterey
+```
+
+
+## Taming the terminal
+
+https://forum.manjaro.org/t/bash-with-autocomplete-and-fancy-flags/112108
+
+https://github.com/romkatv/powerlevel10k
+
+
+
+## Small tweaks
+
+Switching back to last tab on Firefox: https://superuser.com/questions/290704/switching-back-to-last-tab-on-firefox
+
+
+# Links
+
+https://www.makeuseof.com/how-to-install-and-remove-packages-arch-linux/
+
+Optional dependencies in Manjaro's pamac: 
+
+https://forum.manjaro.org/t/pamac-how-to-install-all-optional-dependencies/59041/3
+
+https://www.reddit.com/r/archlinux/comments/1z9y3l/install_optional_dependencies/

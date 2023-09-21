@@ -117,15 +117,17 @@ echo 1 | sudo tee /sys/module/kvm/parameters/ignore_msrs
 sudo modprobe kvm
 ```
 
-Finally we should be able to run a MacOS Docker container like [Monterey](https://github.com/sickcodes/Docker-OSX#monterey-) or [Ventura](https://github.com/sickcodes/Docker-OSX#ventura-) or the default Catalina:
+Finally we should be able to run a MacOS Docker container like [Monterey](https://github.com/sickcodes/Docker-OSX#monterey-) or [Ventura](https://github.com/sickcodes/Docker-OSX#ventura-):
 
 ```
-docker run -it \
+docker run -it \                                                                                                ✔  3h 18m 14s  
     --device /dev/kvm \
     -p 50922:10022 \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e "DISPLAY=${DISPLAY:-:0.0}" \
-    sickcodes/docker-osx:latest
+    -e GENERATE_UNIQUE=true \
+    -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
+    sickcodes/docker-osx:monterey
 ```
 
 It's important to run the `docker` command without `sudo` (see https://github.com/sickcodes/Docker-OSX/issues/91#issuecomment-786794711):
@@ -203,7 +205,87 @@ No worries: it's a virtual drive and only grows as needed :)
 
 This actually may take a while!
 
+After 2 hours or so the setup process should be ready and the MacOS configuration wizard will ask you about iCloud login etc.
 
+If you managed to get past these screens, you should have a running MacOS:
+
+![](mac-os-running-in-docker-on-linux.png)
+
+
+
+
+## Save the hdd for later MacOS Docker runs (to not be forced to install MacOS again)
+
+Steps taken from https://www.youtube.com/watch?v=wLezYl77Ll8
+
+Run `docker ps -a` to find your MacOS container's id:
+
+```
+$ docker ps -a
+
+e4e227957bb9   sickcodes/docker-osx:monterey   "/bin/bash -c 'sudo …"   48 minutes ago      Up 48 minutes                  0.0.0.0:50922->10022/tcp, :::50922->10022/tcp   sad_ganguly
+```
+
+Now inspect the container and search for `Upper`:
+
+```
+$ docker inspect e4 | grep Upper
+"UpperDir": "/var/lib/docker/overlay2/fe1f1d8e462caa79fc89aa9bfe9892382ccda1d954a975f53c3f88875de36291/diff",
+```
+
+Visit the folder (which is our containers base file system) and go to `home/arch/OSX-KVM`:
+
+```
+$ su root
+$ cd /var/lib/docker/overlay2/fe1f1d8e462caa79fc89aa9bfe9892382ccda1d954a975f53c3f88875de36291/diff/home/arch/OSX-KVM
+$ ls -lha
+
+[pikelinux OSX-KVM]# ls -lha
+insgesamt 31G
+drwxr-xr-x  8 jonashackt jonashackt  4,0K 21. Sep 13:58 .
+drwxr-xr-x  3 jonashackt jonashackt  4,0K 19. Nov 2022  ..
+-rw-r--r--  1 jonashackt jonashackt  711M 21. Sep 16:58 BaseSystem.img
+drwxr-xr-x  2 jonashackt jonashackt  4,0K 21. Sep 13:58 bootdisks
+-rw-r--r--  1 jonashackt jonashackt   39K 21. Sep 13:58 config-custom.plist
+drwxr-xr-x  4 jonashackt jonashackt  4,0K 19. Nov 2022  EFI
+drwxr-xr-x  2 jonashackt jonashackt  4,0K 21. Sep 13:58 envs
+-rw-r--r--  1 jonashackt jonashackt   31G 21. Sep 16:59 mac_hdd_ng.img
+-rwxr-xr-x  1 jonashackt jonashackt 1021K 21. Sep 13:58 macserial
+-rw-------  1 jonashackt jonashackt     0 21. Sep 13:58 nohup.out
+drwxr-xr-x  2 jonashackt jonashackt  4,0K 19. Nov 2022  OpenCore
+drwxr-xr-x 20 jonashackt jonashackt  4,0K 21. Sep 13:58 OpenCorePkg
+-rw-r--r--  1 jonashackt jonashackt  128K 21. Sep 16:54 OVMF_VARS-1024x768.fd
+drwxr-xr-x  2 jonashackt jonashackt  4,0K 21. Sep 13:58 plists
+-rw-r--r--  1 jonashackt jonashackt   116 21. Sep 13:58 serial_sets-2023-09-21-11:58:27.csv
+-rw-r--r--  1 jonashackt jonashackt   100 21. Sep 13:58 serial.tsv
+-rw-r--r--  1 jonashackt jonashackt    26 21. Sep 13:58 startup.nsh
+-rw-r--r--  1 jonashackt jonashackt   56K 21. Sep 13:58 vendor_macs.tsv
+```
+
+The file `mac_hdd_ng.img` is our (big, after installation) hdd, where the installed MacOS resides.
+
+Now we can copy that over and use it with other MacOS containers (leveraging the nacked image):
+
+```
+$ cp mac_hdd_ng.img /home/jonashackt/mac_hdd_docker.img
+$ su jonashackt
+$ cd $HOME
+$ sudo chown jonashackt mac_hdd_docker.img 
+```
+
+Now we should be able to use the naked image like that, defining our own hdd image:
+
+```
+docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v "${PWD}/mac_hdd_docker.img:/image" \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    -e GENERATE_UNIQUE=true \
+    -e MASTER_PLIST_URL=https://raw.githubusercontent.com/sickcodes/Docker-OSX/master/custom/config-nopicker-custom.plist \
+    sickcodes/docker-osx:naked
+```
 
 
 ## Taming the terminal
@@ -216,7 +298,11 @@ https://github.com/romkatv/powerlevel10k
 
 ## Small tweaks
 
-Switching back to last tab on Firefox: https://superuser.com/questions/290704/switching-back-to-last-tab-on-firefox
+* Switching back to last tab on Firefox: https://superuser.com/questions/290704/switching-back-to-last-tab-on-firefox
+
+* Night mode: https://www.reddit.com/r/ManjaroLinux/comments/ogf1iy/turn_on_night_mode/
+
+* Flatpack on Manjaro: Simply activate in Add/Remove Programs, since it's already installed: https://flatpak.org/setup/Manjaro
 
 
 # Links
@@ -228,3 +314,12 @@ Optional dependencies in Manjaro's pamac:
 https://forum.manjaro.org/t/pamac-how-to-install-all-optional-dependencies/59041/3
 
 https://www.reddit.com/r/archlinux/comments/1z9y3l/install_optional_dependencies/
+
+
+https://wiki.archlinux.org/title/docker
+
+https://dev.to/kenji_goh/got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socket-3dne
+
+https://www.digitalocean.com/community/questions/how-to-fix-docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socket
+
+https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user

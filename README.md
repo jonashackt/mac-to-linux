@@ -49,12 +49,48 @@ That should be everything to fire up our first Docker container on Linux:
 
 `sudo docker run -it --rm archlinux bash -c "echo hello world"`
 
+Since we also want to be able to run our `docker` command without `sudo` (and we NEED to run it without sudo for the `MacOs on Linux` part), we need to do [the following steps according to the Arch package wiki](https://wiki.archlinux.org/title/docker#Installation): 
+
+> If you want to be able to run the docker CLI command as a non-root user, add your user to the docker user group, re-login, and restart docker.service. 
+
+(but there's also a warning: `Warning: Anyone added to the docker group is root equivalent because they can use the docker run --privileged command to start containers with root privileges.`)
+
+So here we go:
+
+```
+sudo usermod -aG docker "${USER}"
+```
+
+Log out and log back in so that your group membership is re-evaluated - or even restart your machine to make the changes take effect. Maybe also `newgrp docker` should be enough.
+
+Restart the Docker service via:
+
+```
+systemctl restart docker
+```
+
+Now we should be able to run docker without sudo:
+
+```
+docker run -it --rm archlinux bash -c "echo hello world"
+```
+
+
+
+
 
 ## MacOS on Linux
 
 You may already guessed it: I will need MacOS for some time to follow - just to be able migrate some workflows I created over all those years. And also to use Samsung Smart Switch, my tax software and others. So is there a problem to run MacOS virtualized on Linux?
 
 First I thought about using VirtualBox to do the job - but then I read statements like: "It could work (after many crazy configuration steps) - but then you shouldn't do an upgrade ever, since it may stop working right after the update". What...?! OMG.
+
+See https://najigram.com/2022/01/run-macos-in-virtualbox-on-linux-os/, https://github.com/hkdb/VBoxMacSetup, https://www.macwelt.de/article/1506511/macos-ventura-mit-virtualbox-als-vm-betreiben.html
+
+
+
+
+## MacOS as Docker container on Linux
 
 But then I had an idea: Why not use containers to do the job? And a quick google search got me to https://github.com/sickcodes/Docker-OSX 
 
@@ -81,18 +117,74 @@ echo 1 | sudo tee /sys/module/kvm/parameters/ignore_msrs
 sudo modprobe kvm
 ```
 
-Finally we should be able to run a MacOS Docker container (like [Monterey](https://github.com/sickcodes/Docker-OSX#monterey-) or [Ventura](https://github.com/sickcodes/Docker-OSX#ventura-)):
+Finally we should be able to run a MacOS Docker container like [Monterey](https://github.com/sickcodes/Docker-OSX#monterey-) or [Ventura](https://github.com/sickcodes/Docker-OSX#ventura-) or the default Catalina:
 
 ```
-sudo docker run -it \
+docker run -it \
     --device /dev/kvm \
     -p 50922:10022 \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e "DISPLAY=${DISPLAY:-:0.0}" \
-    -e GENERATE_UNIQUE=true \
-    -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
-    sickcodes/docker-osx:monterey
+    sickcodes/docker-osx:latest
 ```
+
+It's important to run the `docker` command without `sudo` (see https://github.com/sickcodes/Docker-OSX/issues/91#issuecomment-786794711):
+
+> Run without sudo (GTK can't run in roots desktop because root isn't running a display server.)
+
+Now we should see a QEMU firing up running MacOS in recovery mode:
+
+![](macos-in-docker-on-linux.png)
+
+
+
+## Troubleshooting MacOS in Docker
+
+see also https://github.com/sickcodes/Docker-OSX#troubleshooting
+
+I had some issues getting the container to run.
+
+#### iptables
+
+```
+iptables: No chain/target/match by that name
+```
+
+See https://stackoverflow.com/questions/31667160/running-docker-container-iptables-no-chain-target-match-by-that-name - clearing all the chaings fixed it for me:
+
+```
+sudo iptables -t filter -F
+sudo iptables -t filter -X
+systemctl restart docker
+```
+
+#### gtk initialization failed
+
+```
+alsa: Could not initialize ADC
+alsa: Failed to open `default':
+alsa: Reason: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5181:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5181:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5181:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5704:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2666:(snd_pcm_open_noupdate) Unknown PCM default
+alsa: Could not initialize ADC
+alsa: Failed to open `default':
+alsa: Reason: No such file or directory
+audio: Could not create a backend for voice `adc'
+gtk initialization failed
+```
+
+As described here https://github.com/sickcodes/Docker-OSX/issues/91#issuecomment-786794711 execute the following:
+
+```
+xhost +
+```
+
 
 
 ## Taming the terminal

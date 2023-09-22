@@ -117,10 +117,10 @@ echo 1 | sudo tee /sys/module/kvm/parameters/ignore_msrs
 sudo modprobe kvm
 ```
 
-Finally we should be able to run a MacOS Docker container like [Monterey](https://github.com/sickcodes/Docker-OSX#monterey-) or [Ventura](https://github.com/sickcodes/Docker-OSX#ventura-):
+Finally we should be able to run a MacOS Docker container like [Monterey](https://github.com/sickcodes/Docker-OSX#monterey-):
 
 ```
-docker run -it \                                                                                                ✔  3h 18m 14s  
+docker run -it \
     --device /dev/kvm \
     -p 50922:10022 \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -129,6 +129,21 @@ docker run -it \                                                                
     -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
     sickcodes/docker-osx:monterey
 ```
+
+or [Ventura](https://github.com/sickcodes/Docker-OSX#ventura-):
+
+```
+docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    -e GENERATE_UNIQUE=true \
+    -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
+    sickcodes/docker-osx:ventura
+```
+
+![](macos-ventura.png)
 
 It's important to run the `docker` command without `sudo` (see https://github.com/sickcodes/Docker-OSX/issues/91#issuecomment-786794711):
 
@@ -186,6 +201,56 @@ As described here https://github.com/sickcodes/Docker-OSX/issues/91#issuecomment
 ```
 xhost +
 ```
+
+#### qemu Gdk-WARNING 'BadAccess (attempt to access private resource denied)'. (Details: serial 220 error_code 10 request_code 130 (MIT-SHM) minor_code 1)
+
+I got a:
+
+```
+(qemu:972): Gdk-WARNING **: 09:10:53.652: The program 'qemu' received an X Window System error.
+This probably reflects a bug in the program.
+The error was 'BadAccess (attempt to access private resource denied)'.
+  (Details: serial 220 error_code 10 request_code 130 (MIT-SHM) minor_code 1)
+  (Note to programmers: normally, X errors are reported asynchronously;
+   that is, you will receive the error a while after causing it.
+   To debug your program, run it with the GDK_SYNCHRONIZE environment
+   variable to change this behavior. You can then get a meaningful
+   backtrace from your debugger if you break on the gdk_x_error() function.)
+```
+
+Check what status the services `libvirtd` and `virtlogd` have - and restart them, if they have `inactive (dead)`:
+
+```
+$ systemctl status libvirtd                                                                                                                                                      ✔ 
+○ libvirtd.service - Virtualization daemon
+     Loaded: loaded (/usr/lib/systemd/system/libvirtd.service; enabled; preset: disabled)
+     Active: inactive (dead) since Fri 2023-09-22 10:36:17 CEST; 47min ago
+   Duration: 2min 2ms
+TriggeredBy: ● libvirtd-ro.socket
+             ● libvirtd.socket
+             ● libvirtd-admin.socket
+       Docs: man:libvirtd(8)
+             https://libvirt.org
+    Process: 742 ExecStart=/usr/bin/libvirtd $LIBVIRTD_ARGS (code=exited, status=0/SUCCESS)
+   Main PID: 742 (code=exited, status=0/SUCCESS)
+        CPU: 222ms
+
+Sep 22 10:34:17 pikelinux systemd[1]: Starting Virtualization daemon...
+Sep 22 10:34:17 pikelinux systemd[1]: Started Virtualization daemon.
+Sep 22 10:36:17 pikelinux systemd[1]: libvirtd.service: Deactivated successfully.
+$ systemctl status virtlogd                                                                                                                                                    3 ✘ 
+○ virtlogd.service - Virtual machine log manager
+     Loaded: loaded (/usr/lib/systemd/system/virtlogd.service; indirect; preset: disabled)
+     Active: inactive (dead)
+TriggeredBy: ● virtlogd.socket
+             ○ virtlogd-admin.socket
+       Docs: man:virtlogd(8)
+             https://libvirt.org
+$ sudo systemctl enable --now libvirtd
+$ sudo systemctl enable --now virtlogd
+```
+
+
 
 
 
@@ -288,6 +353,20 @@ docker run -it \
 ```
 
 And voilà our container should start with MacOS fully installed!
+
+
+## Optimizing performance of the dockerized MacOS
+
+See https://github.com/sickcodes/osx-optimizer
+
+#### Disable spotlight indexing on macOS to heavily speed up Virtual Instances
+
+Inside the MacOS instance, open a terminal and execute:
+
+```
+sudo mdutil -i off -a
+```
+
 
 
 ## Taming the terminal

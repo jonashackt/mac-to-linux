@@ -332,10 +332,10 @@ The file `mac_hdd_ng.img` is our (big, after installation) hdd, where the instal
 Now we can copy that over and use it with other MacOS containers (leveraging the nacked image):
 
 ```
-$ cp mac_hdd_ng.img /home/jonashackt/mac_hdd_docker.img
+$ cp mac_hdd_ng.img /home/jonashackt/mac_hdd_ventura.img
 $ su jonashackt
 $ cd $HOME
-$ sudo chown jonashackt mac_hdd_docker.img 
+$ sudo chown jonashackt mac_hdd_ventura.img 
 ```
 
 Now we should be able to use the naked image like that, defining our own hdd image:
@@ -344,7 +344,7 @@ Now we should be able to use the naked image like that, defining our own hdd ima
 docker run -it \
     --device /dev/kvm \
     -p 50922:10022 \
-    -v "${PWD}/mac_hdd_docker.img:/image" \
+    -v "${PWD}/mac_hdd_ventura.img:/image" \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e "DISPLAY=${DISPLAY:-:0.0}" \
     -e GENERATE_UNIQUE=true \
@@ -404,3 +404,13 @@ https://dev.to/kenji_goh/got-permission-denied-while-trying-to-connect-to-the-do
 https://www.digitalocean.com/community/questions/how-to-fix-docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socket
 
 https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
+
+
+
+# Open Topics
+
+* Telefone app for SIP on Linux
+* Zoom 
+* MS Teams
+* Miro
+* Slack

@@ -386,6 +386,21 @@ https://github.com/romkatv/powerlevel10k
 * Flatpack on Manjaro: Simply activate in Add/Remove Programs, since it's already installed: https://flatpak.org/setup/Manjaro
 
 
+
+# Productivity Software on Linux
+
+## Microsoft Teams
+
+Microsoft announced to discontinue the Linux client in favour of a Progressive Web App (PWA), which is integrated in Microsoft Edge for Linux:
+
+https://techcommunity.microsoft.com/t5/microsoft-teams-blog/microsoft-teams-progressive-web-app-now-available-on-linux/ba-p/3669846
+
+So I installed Microsoft Edge from the Manjaro Package Manager using the flatpack package and then went to `teams.microsoft.com` and clicked on the three dots in Edge, then `Apps` and then `Install this site as an app`. 
+
+Alternativeley you can use the (also flatpack managed) unofficial `Teams for Linux` client (which is hosted on GitHub https://github.com/IsmaelMartinez/teams-for-linux and powered by Electron).
+
+
+
 # Links
 
 https://www.makeuseof.com/how-to-install-and-remove-packages-arch-linux/

@@ -383,18 +383,32 @@ https://github.com/romkatv/powerlevel10k
 
 * Night mode: https://www.reddit.com/r/ManjaroLinux/comments/ogf1iy/turn_on_night_mode/
 
-* Flatpack on Manjaro: Simply activate in Add/Remove Programs, since it's already installed: https://flatpak.org/setup/Manjaro
+
 
 
 
 # Productivity Software on Linux
+
+## Enable flathub Repository in Manjaro package management
+
+Simply activate in Add/Remove Programs, since it's already installed - as the docs state https://flatpak.org/setup/Manjaro
+
+> Flatpak is installed by default on Manjaro 20 or higher.
+
+> To enable its support, navigate to the Software Manager (Add/Remove Programs)
+
+> Click on the triple line menu [or dots depending on the Desktop Environment] on the right, in the drop down menu select "Preferences"
+
+> Navigate to the "Flatpak" tab and slide the toggle to Enable Flatpak support (it is also possible to enable checking for updates, which is recommended).
+
+Flatpack is super useful to install many Desktop applications like MS Teams, Zoom, Slack etc.
+
 
 ## Spotlight like search
 
 https://github.com/cerebroapp/cerebro
 
 Install it via the AUR package https://aur.archlinux.org/packages/cerebro-bin
-
 
 
 ## Microsoft Teams

@@ -389,6 +389,14 @@ https://github.com/romkatv/powerlevel10k
 
 # Productivity Software on Linux
 
+## Spotlight like search
+
+https://github.com/cerebroapp/cerebro
+
+Install it via the AUR package https://aur.archlinux.org/packages/cerebro-bin
+
+
+
 ## Microsoft Teams
 
 Microsoft announced to discontinue the Linux client in favour of a Progressive Web App (PWA), which is integrated in Microsoft Edge for Linux:
@@ -399,6 +407,42 @@ So I installed Microsoft Edge from the Manjaro Package Manager using the flatpac
 
 Alternativeley you can use the (also flatpack managed) unofficial `Teams for Linux` client (which is hosted on GitHub https://github.com/IsmaelMartinez/teams-for-linux and powered by Electron).
 
+
+## Zoom
+
+Theres's also simply a flatpack package available: https://flathub.org/apps/us.zoom.Zoom
+
+Install it via Manjaros package manager (gui or command line.
+
+
+## Slack
+
+Flatpack is here to help again: https://flathub.org/apps/com.slack.Slack
+
+
+## Miro
+
+There's a snap available here https://snapcraft.io/install/miro/manjaro
+
+To be able to use Snapcraft on Manjaro we need to install it first - again either via gui or command line:
+
+```
+sudo pacman -S snapd
+```
+
+Also enable the systemd unit that manages the main snap communication socket:
+
+```
+sudo systemctl enable --now snapd.socket
+```
+
+Restart your system to ensure snap’s paths are updated correctly. 
+
+Now install Miro via snap:
+
+```
+sudo snap install miro
+```
 
 
 # Links
@@ -425,7 +469,3 @@ https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non
 # Open Topics
 
 * Telefone app for SIP on Linux
-* Zoom 
-* MS Teams
-* Miro
-* Slack

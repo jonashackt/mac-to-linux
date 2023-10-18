@@ -459,6 +459,20 @@ sudo snap install miro
 ```
 
 
+## SIP Telefone app for Linux
+
+If you're like me you want to be callable even when you're mobile phone is on airplane mode. The easiest solution is a SIP phone client software, where you just configure your SIP credentials and can use your laptop or desktop machine to have phone calls.
+
+There's huge list of SIP clients around, but already on my Android phone there are only a few that really work.
+
+While writing this docs I found out about linphone https://www.linphone.org/technical-corner/linphone, which has clients for nearly every OS.
+
+I installed the AUR AppImage package https://aur.archlinux.org/packages/linphone-desktop-appimage (the other https://aur.archlinux.org/packages/linphone-desktop didn't work on my machine).
+
+My first tests worked like a charm!
+
+
+
 # Links
 
 https://www.makeuseof.com/how-to-install-and-remove-packages-arch-linux/
@@ -483,3 +497,4 @@ https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non
 # Open Topics
 
 * Telefone app for SIP on Linux
+* 

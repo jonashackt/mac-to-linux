@@ -465,11 +465,44 @@ If you're like me you want to be callable even when you're mobile phone is on ai
 
 There's huge list of SIP clients around, but already on my Android phone there are only a few that really work.
 
-While writing this docs I found out about linphone https://www.linphone.org/technical-corner/linphone, which has clients for nearly every OS.
+While writing this docs I found out about linphone https://www.linphone.org/technical-corner/linphone, which has clients for nearly every OS. And it's also OpenSource, developed on GitLab.com https://gitlab.linphone.org/BC/public/linphone-desktop
 
 I installed the AUR AppImage package https://aur.archlinux.org/packages/linphone-desktop-appimage (the other https://aur.archlinux.org/packages/linphone-desktop didn't work on my machine).
 
 My first tests worked like a charm!
+
+
+
+## Google Drive Desktop file sync
+
+On my Mac I had a Desktop App to sync my Drive files into my file manager. Sadly there's no Google Drive Desktop for Linux https://support.google.com/drive/answer/10838124
+
+There's a great post on baeldung about this topic: https://www.baeldung.com/linux/google-drive-guide (see also https://askubuntu.com/questions/1390151/google-drive-in-ubuntu-with-full-local-copy)
+
+But we have some alternatives. First thing I checked was `gnome-online-accounts` (see [the docs](https://help.gnome.org/users/gnome-help/stable/accounts-which-application.html.en)). This package is already pre-installed on Manjaro. Simply head over to `preference / online accounts` and log in to your Google account. Now the Gnome file manager should have a new entry, where you can access your Google Drive files: 
+
+![](gnome-online-accounts-google-drive-integration.png)
+
+But [they aren't stored locally sadly](https://gitlab.gnome.org/GNOME/nautilus/-/issues/784), so they will be downloaded every time you access them. And as the baeldung post states, the file names are completely obscured on the command line. E.g. if you have a file called `bla` in the file manager, it's named like `11lfzX-8dH_eWtf2JWa3caRtodOnlXDbN` on the command line and you even need to access it in a weird way like `cd '/run/user/1000/gvfs/google-drive:host=gmail.com,user=myemail'`.
+
+
+If you need locally stored files with Google Drive, IMHO there's no perfect solution. Maybe https://www.insynchq.com is worth a try, but also costs some 30 bucks...
+
+
+
+
+## Dropbox Linux client
+
+There's a official Dropbox Linux client https://help.dropbox.com/de-de/installs/linux-commands and also a AUR package https://aur.archlinux.org/packages/dropbox
+
+Compared to Drive the integration is superb. Start the app via the application menu and after the login you will find a Dropbox icon right at the top of your Gnome Desktop - just as you are used to on a Mac:
+
+![](dropbox-gnome-integration.png)
+
+Also you can drag the folder `Dropbox` in your profile directory into the left menu bar of the Gnome file manager. And voila: you have the same integration as on a Mac!
+
+![](dropbox-gnome-filemanager-integration.png)
+
 
 
 
@@ -496,5 +529,6 @@ https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non
 
 # Open Topics
 
-* Telefone app for SIP on Linux
-* 
+* VS Code and Dev 
+
+* Get Linux keyboard (with print, no Apple cmd, F-keys etc.)

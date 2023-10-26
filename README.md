@@ -506,6 +506,63 @@ Also you can drag the folder `Dropbox` in your profile directory into the left m
 
 
 
+# Development software
+
+## VSCode
+
+There are plenty of ways to install VSCode to Linux / Manjaro. First I tried the flathub package, but then I realised that a Flatpack packaged app is really separated from the rest of the system. Since it runs in a container. So no other development tools or frameworks will work inside the VSCode container, we would have to install it all into it... 
+
+Although I love the idea of container packaged software, I don't really wanted to live it that kind of hard fashioned with my development setup. Sure, development containers would also work. But I wanted kind of a more traditional installation. And luckily there's the AUR package https://aur.archlinux.org/packages/visual-studio-code-bin . Beware of the `-bin` in the name of the package, the other one installs the `Code - OSS` app instead. [See the differences here](https://github.com/microsoft/vscode/wiki/Differences-between-the-repository-and-Visual-Studio-Code).
+
+
+
+
+# Misc
+
+## Printer setup
+
+Here I learned to __ALWAYS__ search for an AUR package first!
+
+I have an old Canon MX870 printer, which has ultra low cost and separate printer cartridges. So I went to the Canon Driver page and it was simply empty. No Linux drivers at all. A google search got me to [driverscollection.com](https://de.driverscollection.com/?file_cid=4527114398460c3f541c53ebcfb), but there were only `.deb` (Ubuntu, Debian) and `.rpm` (Fedora, SUSE) packages. The build from source also didn't work, since file were missing... (I already searched for "How to Install .DEB files in Arch Based Distros" - [don't do that!](https://forum.manjaro.org/t/how-to-install-deb/34452/3)).
+
+But than I simply searched for `canon mx870 linux driver arch` - and there really was an AUR package for my printer! Horay!
+
+Now installing `canon-pixma-mx870-complete` gave me some errors - but I managed to solve them. The first error indicated, that I didn't have `autoconf` installed. So I installed it with `pamac`. The second error got me to the missing `automake`, which I also installed. Then I had a strange error with the [lib32-libusb-compat package](https://archlinux.org/packages/core/x86_64/libusb/), which is needed by the `canon-pixma-mx870-complete` package: 
+
+```
+syntax error near unexpected token `LIBUSB,'
+```
+
+Luckily [this thread](https://bbs.archlinux.org/viewtopic.php?id=251492) and also the [`lib32-libusb-compat` AUR package site](https://aur.archlinux.org/packages/lib32-libusb-compat) got me to the problem: I needed to install [`base-devel` AUR package](https://archlinux.org/packages/core/any/base-devel/) first!
+
+Now running `pamac install lib32-libusb-compat canon-pixma-mx870-complete` ran like a charm!
+
+The scanner now worked using the app `Document Scanner`.
+
+
+But there was no printer configured out-of-the-box. Although the driver (`PPD` files) seem to be present correctly.
+
+In the normal settings dialog had a `add printer` button, but my Canon network printer wasn't found there and I couldn't add it though:
+
+![](system-settings-printer.png)
+
+So I went over to the console and started the CUPS gui directly just executing `system-config-printer`. Now adding a new printer in the CUPS gui also shows `network printers` - and there my Canon MX870 showed up!
+
+![](cups-gui-network-printer-found.png)
+
+Really nice. I clicked `forward` and the Driver was automatically set to `Canon MX870 series - CUPS+Gutenprint v5.3.4 Simplified`, which may also work - but we installed the original `Canon MX870 series Ver.3.30` right?! Therefore I changed the created printer after the wizard is finished and clicked on `brand and model` and change... and then selected the correct driver from the database:
+
+![](change-printer-driver.png)
+
+I hoped my printer would work now, but trying to print a example page didn't work. A final piece was missing.
+
+But finally I found it: In the printer's settings under `guidelines` the condition was not `activated`. I activated the printer here and everything worked fine!
+
+
+
+
+
+
 # Links
 
 https://www.makeuseof.com/how-to-install-and-remove-packages-arch-linux/
@@ -532,3 +589,6 @@ https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non
 * VS Code and Dev 
 
 * Get Linux keyboard (with print, no Apple cmd, F-keys etc.)
+
+* Samsung Smart Switch 
+

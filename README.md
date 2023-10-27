@@ -4,7 +4,7 @@ Experimenting with leaving my Mac in favour of a Linux machine
 
 ## Why going from Mac to Linux?
 
-After many years (8+) of using a MacBook and fancy Apple stuff I found myself in thinking about leaving the golden cage.
+After many years (nearly 9) of using a MacBook and fancy Apple stuff I found myself in thinking about leaving the golden cage.
 
 I already dropped my iPhone in favour of an Android phone (currently Samsung Galaxy S23, mainly because of the great camera, the small form factor and the long update period) - and I don't really use iPhoto and others anymore. Also tethering doesn't work between an Android phone and a Mac (really! in 2023). 
 
@@ -560,6 +560,146 @@ But finally I found it: In the printer's settings under `guidelines` the conditi
 
 
 
+As a side note: If you want to use the open source drivers and need to configure `ldp` protocol instead, here's maybe help: https://bbs.archlinux.org/viewtopic.php?id=143349
+
+Also the CUPS system itself is a very good source of information http://localhost:631/help/network.html
+
+
+
+## Samsung Smart Switch
+
+As already said I dropped my iPhone in favour of Android. As Samsung has a great overall package of 5 years of updates, I went for a S23.
+
+On my Mac I used Samsung Smart Switch for the backups, which was quite easy to use. So why not use it on Manjaro too? Well, there's no Linux version sadly :( https://www.samsung.com/de/apps/smart-switch/
+
+Now we have a few alternatives left: https://xdaforums.com/t/samsung-smart-swith-for-ubuntu.3335276/ & https://superuser.com/questions/1314720/how-to-backup-a-samsung-mobile-to-linux 
+
+We could use Wine as a Windows app emulator on Linux, but there doesn't seem to be good experiences with Smart Switch sadly. In the Wine database [this is rated as garbage](https://appdb.winehq.org/objectManager.php?sClass=application&iId=17967).
+
+I opted for the VirtualBox / Windows path. I already had a project in place here, where I could simply follow the guide and have a running Windows box in minutes: https://github.com/jonashackt/windows-vagrant-ansible (well at least I thought so, because the base Vagrant box Edge dev was discontinued by Microsoft).
+
+But luckily we only need to get a Windows VirtualBox VM here, no automation with Ansible or Vagrant for now.
+
+So just do the following:
+
+### Download Windows 11 evaluation VirtualBox .ova
+
+But maybe there's help & there is a way to add an already existant VirtualBox `.ova` as a VagrantBox: https://gist.github.com/aondio/66a79be10982f051116bc18f1a5d07dc. So let's try it.
+
+Download a pre-packaged VirtualBox `.ova` here https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/ which already includes an evaluation version of Windows 11. The link should download the VirtualBox `.zip` file (22gigs will take their time depending on your Internet speed).
+
+
+### Import .ova into VirtualBox
+
+Unpack the `WinDev2309Eval.ova`.
+
+Then add it to the local VirtualBox installation [via `VBoxManage import`](https://docs.oracle.com/en/virtualization/virtualbox/6.0/user/vboxmanage-import.html):
+
+```
+VBoxManage import ~/Downloads/WinDev2309Eval.VirtualBox/WinDev2309Eval.ova
+```
+
+This may take some time:
+
+```
+$ VBoxManage import ~/Downloads/WinDev2309Eval.VirtualBox/WinDev2309Eval.ova             1 ✘ 
+0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+Interpreting /home/jonashackt/Downloads/WinDev2309Eval.VirtualBox/WinDev2309Eval.ova...
+OK.
+Disks:
+  vmdisk1	134217728000	-1	http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized	WinDev2309Eval-disk001.vmdk	-1	-1	
+
+Virtual system 0:
+ 0: Suggested OS type: "Windows11_64"
+    (change with "--vsys 0 --ostype <type>"; use "list ostypes" to list all possible values)
+ 1: Suggested VM name "WinDev2309Eval"
+    (change with "--vsys 0 --vmname <name>")
+ 2: Suggested VM group "/"
+    (change with "--vsys 0 --group <group>")
+ 3: Suggested VM settings file name "/home/jonashackt/VirtualBox VMs/WinDev2309Eval/WinDev2309Eval.vbox"
+    (change with "--vsys 0 --settingsfile <filename>")
+ 4: Suggested VM base folder "/home/jonashackt/VirtualBox VMs"
+    (change with "--vsys 0 --basefolder <path>")
+ 5: Number of CPUs: 4
+    (change with "--vsys 0 --cpus <n>")
+ 6: Guest memory: 8192 MB
+    (change with "--vsys 0 --memory <MB>")
+ 7: USB controller
+    (disable with "--vsys 0 --unit 7 --ignore")
+ 8: Network adapter: orig NAT, config 3, extra slot=0;type=NAT
+ 9: SATA controller, type AHCI
+    (disable with "--vsys 0 --unit 9 --ignore")
+10: Hard disk image: source image=WinDev2309Eval-disk001.vmdk, target path=WinDev2309Eval-disk001.vmdk, controller=9;port=0
+    (change target path with "--vsys 0 --unit 10 --disk path";
+    change controller with "--vsys 0 --unit 10 --controller <index>";
+    change controller port with "--vsys 0 --unit 10 --port <n>";
+    disable with "--vsys 0 --unit 10 --ignore")
+0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+Successfully imported the appliance.
+```
+
+Now the box is already available inside your VirtualBox gui. 
+
+
+### Accessing USB devices (like Samsung Android phones) inside the Windows guest
+
+Be sure to configure the following tweaks manually (until we get the automation working again):
+
+* Video: Scalingfactor to 200% (in order to see something)
+* USB: Activate the USB controller and choose `USB 3.0-Controller (xHCI)`
+
+Finally VirtualBox needs access to the USB devices, that are connected to the host. This doesn't work out-of-the-box and produces the following error, if we run a `VBoxManage list usbhost`:
+
+```
+$ VBoxManage list usbhost
+Failed to access the USB subsystem.
+VirtualBox is not currently allowed to access USB devices. 
+You can change this by adding your user to the 'vboxusers' group. 
+Please see the user manual for a more detailed explanation
+...
+```
+
+But [there's help](https://askubuntu.com/a/377781/451114): We need to add our user to the `vboxusers` group via:
+
+```
+sudo usermod -a -G vboxusers $USER
+```
+
+Log off or even restart your machine - and then check via `groups $USER`, if your user is part of the group `vboxusers`. 
+
+Now the command `VBoxManage list usbhost` should work as expected.
+
+Finally go to your VirtualBoxed Windows and click on `Devices / USB` and select your phone (which will exclusively bind your phone to the guest Windows for now). With that SmartSwitch should be able to access the phone:
+
+![](samsung-smart-switch-accessing-phone-host-usb.png)
+
+
+
+### Creating a shared folder between Manjaro host and Windows guest
+
+In order to create a shared folder to be able to have a directory, where Samsung Smart Switch can store our backup on the Manjaro host, we need to install the Guest Additions into our Windows guest https://www.virtualbox.org/manual/ch04.html#additions-windows
+
+In order to do that, we need to configure a optical drive to our VM:
+
+![](add-optical-drive-with-guest-additions-iso.png)
+
+Therefor head over to our VM's settings in VirtualBox and add a optical drive in the storage settings. Now VirtualBox will create a virtual optical drive with the guest additions iso inside.
+
+Now inside the VM go to `Devices / insert guest additions` and they should show up inside the Windows Explorer.
+
+Double click on the drive and the installation should start:
+
+![](install-guest-additions-via-double-click-on-drive.png))
+
+Follow through the Wizard and finally do the reboot required.
+
+Finally create a shared folder in the VirtualBox settings of the VM. Be sure to check `bind automatically` and `permanently create`!
+
+Now the folder should be available as a new networking location inside the Windows guest.
+
+Fire up Samsung SmartSwitch and try to do a backup to your Manjaro host: Use somthing like `Z:\Samsung\SmartSwitch` as a path, since SmartSwitch will complain that it hasn't enough space available.
+
+![](samsung-smartswitch-use-manjaro-host-directory-for-backup.png)
 
 
 
@@ -590,5 +730,4 @@ https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non
 
 * Get Linux keyboard (with print, no Apple cmd, F-keys etc.)
 
-* Samsung Smart Switch 
-
+* backup

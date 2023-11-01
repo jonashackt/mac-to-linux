@@ -505,6 +505,25 @@ Also you can drag the folder `Dropbox` in your profile directory into the left m
 
 
 
+## Remarkable Linux client
+
+https://github.com/reHackable/awesome-reMarkable
+
+I use the eBook-Reader like notepad Remarkable and on a Mac and on iPhone/Android there are quite good clients to use the cloud sync. There's no current AUR package sadly, but snap is here to help:
+
+https://snapcraft.io/remarkable-desktop and specifically for Manjaro https://snapcraft.io/install/remarkable-desktop/manjaro
+
+But sadly, this Windows app packaged as a wine app didn't work on my machine. It started once, but after an update didn't start anymore.
+
+
+
+Other strategies to get to your documents using Linux:
+
+If you only want to get single documents and download them to your desktop, there's a simple web interface you can enable inside your Remarkable tablet's settings. Just head over to `Settings / Storage` and enable `USB web interface`. My remarkable is now accessible via http://10.11.99.1/ and I can download single documents easily.
+
+
+
+
 
 # Development software
 

@@ -542,6 +542,21 @@ Although I love the idea of container packaged software, I don't really wanted t
 
 # Misc
 
+## HDD Encryption
+
+Manjaro supports full disk encryption right from the OS setup based on LUKS (the defacto Linux standard for hdd encryption). The [best way seems to be a fresh install with HDD encryption](https://forum.manjaro.org/t/disk-encryption/139464/2), since many parts need to be altered. Here's also a good discussion about it:
+
+https://forum.manjaro.org/t/manjaro-with-full-disk-encryption-how-fast-how-stable/136855/17
+
+verdict:
+* Use Manjaro over Arch (since the installer has the encryption process baked in)
+* Use a SSD with Manjaro/Arch to have nearly no performance issues due to encryption
+* bootup will be a bit delayed (few seconds, depending on CPU speed), because GRUB doesn't use multiple processors and needs to decrypt the partition container. If you want to speed this up, you can either manually encrypt things and leave out the boot partition (long process, not recommended). Or lower the LUKS iteration cycles for the boot partion: https://unix.stackexchange.com/questions/497746/how-to-change-luks-encryption-difficulty-on-manjaro-full-disk-encrypt
+
+
+https://forum.manjaro.org/t/howto-boot-without-a-password-for-encrypted-root-partition/44684/4
+
+
 ## Printer setup
 
 Here I learned to __ALWAYS__ search for an AUR package first!
@@ -748,8 +763,6 @@ https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non
 
 
 # Open Topics
-
-* VS Code and Dev 
 
 * Get Linux keyboard (with print, no Apple cmd, F-keys etc.)
 

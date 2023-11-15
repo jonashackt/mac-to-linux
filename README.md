@@ -419,9 +419,120 @@ Microsoft announced to discontinue the Linux client in favour of a Progressive W
 
 https://techcommunity.microsoft.com/t5/microsoft-teams-blog/microsoft-teams-progressive-web-app-now-available-on-linux/ba-p/3669846
 
-So I installed Microsoft Edge from the Manjaro Package Manager using the flatpack package and then went to `teams.microsoft.com` and clicked on the three dots in Edge, then `Apps` and then `Install this site as an app`. 
+But installing Microsoft Edge on Linux (although available) doesn't feel right to me. Alternativeley one can use the (also flatpack managed) unofficial `Teams for Linux` client (which is hosted on GitHub https://github.com/IsmaelMartinez/teams-for-linux and powered by Electron).
 
-Alternativeley you can use the (also flatpack managed) unofficial `Teams for Linux` client (which is hosted on GitHub https://github.com/IsmaelMartinez/teams-for-linux and powered by Electron).
+
+__Both solutions (Microsoft Edge + PWA and unofficial Teams for Linux) didn't work for me the way I thought they would.__ The unofficial client didn't startup when clicking on the Teams links. And joining a meeting using the ID and password from the app itself also started my default Browser Firefox, which is said to be not a good basis for Teams.
+
+> In the end I settled just with using Chrome (installed via Flatpack) and using the url copied from my Google calender in Firefox.
+
+But there was one thing that didn't work: Screensharing!
+
+
+### Screensharing in Microsoft Teams running in Chrome installed via Flatpack
+
+Flatpack isolates apps from the main OS. I simply forgot that, as I tried to use screen sharing with Microsoft Teams from within Chrome.
+
+But [the problem is well known](https://techcommunity.microsoft.com/t5/microsoft-teams/unable-to-share-screen-on-ms-teams-in-google-chrome-109-0-5414/m-p/3717629) - and there's a solution: https://wiki.archlinux.org/title/XDG_Desktop_Portal:
+
+> "Portals were designed for use with applications sandboxed through Flatpak, but any application can use portals to provide uniform access to features independent of desktops and toolkits. This is commonly used, for example, to allow screen sharing on Wayland via PipeWire"
+
+So let's install `xdg-desktop-portal xdg-desktop-portal-gnome` via pamac! On my Manjaro machine they were already installed :)
+
+Interestingly the `xdg-desktop-portal-gnome` [also needs additional `xdg-desktop-portal-gtk`](https://bbs.archlinux.org/viewtopic.php?pid=2086805#p2086805), which Manjaro also had installed already.
+
+Also I needed to configure two Chrome flags:
+
+```shell
+--> chrome://flags/#ozone-platform-hint = Auto
+--> chrome://flags/#enable-webrtc-pipewire-capturer = Enabled
+```
+
+![](chrome-flags-screensharing.png)
+
+
+Sadly my screensharing still didn't work! Looking into the service `xdg-desktop-portal-gnome`, I found lot's of `Failed to associate portal window with parent window` errors:
+
+```shell
+$ systemctl --user status xdg-desktop-portal-gnome
+● xdg-desktop-portal-gnome.service - Portal service (GNOME implementation)
+     Loaded: loaded (/usr/lib/systemd/user/xdg-desktop-portal-gnome.service; static)
+     Active: active (running) since Wed 2023-11-15 10:10:53 CET; 1h 21min ago
+   Main PID: 3064 (xdg-desktop-por)
+      Tasks: 18 (limit: 38392)
+     Memory: 78.5M
+        CPU: 1.517s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/xdg-desktop-portal-gnome.service
+             └─3064 /usr/lib/xdg-desktop-portal-gnome
+
+Nov 15 10:10:53 pikelinux systemd[2077]: Starting Portal service (GNOME implementation)...
+Nov 15 10:10:53 pikelinux systemd[2077]: Started Portal service (GNOME implementation).
+Nov 15 10:32:10 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+Nov 15 10:32:15 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+Nov 15 11:18:35 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+Nov 15 11:18:41 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+Nov 15 11:32:00 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+Nov 15 11:32:10 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+```
+
+
+But luckily there's a great post here https://askubuntu.com/a/1398720/451114
+
+And what was missing on my machine was `pipewire-media-session`! And yes, searching for and installing the package states that it's deprecated. 
+
+```shell
+>>> pipewire-media-session is deprecated and will soon be removed from the
+    repositories. Please use 'wireplumber' instead.
+```
+
+But the community doesn't really seem to be quite fixed on that `wireplumber` is always the best option: https://forum.endeavouros.com/t/pipewire-pipewire-media-session-vs-wireplumber/20705 Also the replacement of pipewire-media-session [has been undone already](https://archlinux.org/news/undone-replacement-of-pipewire-media-session-with-wireplumber/). So I gave it a try:
+
+```shell
+pamac install pipewire-media-session
+systemctl --user enable pipewire-media-session
+systemctl --user start pipewire-media-session
+```
+
+Now `systemctl --user status pipewire-media-session` and `systemctl --user status xdg-desktop-portal-gnome` should be green and running without fault:
+
+```shell
+$ systemctl --user status pipewire-media-session
+● pipewire-media-session.service - PipeWire Media Session Manager
+     Loaded: loaded (/usr/lib/systemd/user/pipewire-media-session.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2023-11-15 11:48:50 CET; 2s ago
+   Main PID: 14990 (pipewire-media-)
+      Tasks: 3 (limit: 38392)
+     Memory: 1.8M
+        CPU: 9ms
+     CGroup: /user.slice/user-1000.slice/user@1000.service/session.slice/pipewire-media-session.service
+             └─14990 /usr/bin/pipewire-media-session
+
+Nov 15 11:48:50 pikelinux systemd[2077]: Started PipeWire Media Session Manager.
+
+
+$ systemctl --user status xdg-desktop-portal-gnome
+● xdg-desktop-portal-gnome.service - Portal service (GNOME implementation)
+     Loaded: loaded (/usr/lib/systemd/user/xdg-desktop-portal-gnome.service; static)
+     Active: active (running) since Wed 2023-11-15 11:49:04 CET; 20s ago
+   Main PID: 15030 (xdg-desktop-por)
+      Tasks: 5 (limit: 38392)
+     Memory: 28.5M
+        CPU: 348ms
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/xdg-desktop-portal-gnome.service
+             └─15030 /usr/lib/xdg-desktop-portal-gnome
+
+Nov 15 11:49:04 pikelinux systemd[2077]: Starting Portal service (GNOME implementation)...
+Nov 15 11:49:04 pikelinux systemd[2077]: Started Portal service (GNOME implementation).
+```
+
+Now in Microsoft Teams again I granted the screensharing access to my whole screen:
+
+![](screensharing-grant-access-to-whole-screen.png)
+
+Finally Screensharing in Teams worked:
+
+![](screensharing-working-chrome.png)
+
 
 
 ## Zoom
@@ -767,3 +878,5 @@ https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non
 * Get Linux keyboard (with print, no Apple cmd, F-keys etc.)
 
 * backup
+
+* Office 365 on Linux?

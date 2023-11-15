@@ -30,7 +30,492 @@ I tried to come up with some:
 Finally I opted for Manjaro Linux https://manjaro.org/, which is based on Arch Linux.
 
 
-## Docker
+
+## Taming the terminal
+
+https://forum.manjaro.org/t/bash-with-autocomplete-and-fancy-flags/112108
+
+https://github.com/romkatv/powerlevel10k
+
+
+
+## Small tweaks
+
+* Switching back to last tab on Firefox: https://superuser.com/questions/290704/switching-back-to-last-tab-on-firefox
+
+* Night mode: https://www.reddit.com/r/ManjaroLinux/comments/ogf1iy/turn_on_night_mode/
+
+* Unable to cancel a command on Gnome terminal? Have a look at https://unix.stackexchange.com/a/33017/140406 and delete every `Strg+C` keyboard shortcut in the Gnome terminal settings!
+
+
+
+
+
+# Productivity Software on Linux
+
+## Enable flathub Repository in Manjaro package management
+
+Simply activate in Add/Remove Programs, since it's already installed - as the docs state https://flatpak.org/setup/Manjaro
+
+> Flatpak is installed by default on Manjaro 20 or higher.
+
+> To enable its support, navigate to the Software Manager (Add/Remove Programs)
+
+> Click on the triple line menu [or dots depending on the Desktop Environment] on the right, in the drop down menu select "Preferences"
+
+> Navigate to the "Flatpak" tab and slide the toggle to Enable Flatpak support (it is also possible to enable checking for updates, which is recommended).
+
+Flatpack is super useful to install many Desktop applications like MS Teams, Zoom, Slack etc.
+
+
+## Spotlight like search
+
+https://github.com/cerebroapp/cerebro
+
+Install it via the AUR package https://aur.archlinux.org/packages/cerebro-bin
+
+
+## Microsoft Teams
+
+Microsoft announced to discontinue the Linux client in favour of a Progressive Web App (PWA), which is integrated in Microsoft Edge for Linux:
+
+https://techcommunity.microsoft.com/t5/microsoft-teams-blog/microsoft-teams-progressive-web-app-now-available-on-linux/ba-p/3669846
+
+But installing Microsoft Edge on Linux (although available) doesn't feel right to me. Alternativeley one can use the (also flatpack managed) unofficial `Teams for Linux` client (which is hosted on GitHub https://github.com/IsmaelMartinez/teams-for-linux and powered by Electron).
+
+
+__Both solutions (Microsoft Edge + PWA and unofficial Teams for Linux) didn't work for me the way I thought they would.__ The unofficial client didn't startup when clicking on the Teams links. And joining a meeting using the ID and password from the app itself also started my default Browser Firefox, which is said to be not a good basis for Teams.
+
+> In the end I settled just with using Chrome (installed via Flatpack) and using the url copied from my Google calender in Firefox.
+
+But there was one thing that didn't work: Screensharing!
+
+
+### Screensharing in Microsoft Teams running in Chrome installed via Flatpack
+
+Flatpack isolates apps from the main OS. I simply forgot that, as I tried to use screen sharing with Microsoft Teams from within Chrome.
+
+But [the problem is well known](https://techcommunity.microsoft.com/t5/microsoft-teams/unable-to-share-screen-on-ms-teams-in-google-chrome-109-0-5414/m-p/3717629) - and there's a solution: https://wiki.archlinux.org/title/XDG_Desktop_Portal:
+
+> "Portals were designed for use with applications sandboxed through Flatpak, but any application can use portals to provide uniform access to features independent of desktops and toolkits. This is commonly used, for example, to allow screen sharing on Wayland via PipeWire"
+
+So let's install `xdg-desktop-portal xdg-desktop-portal-gnome` via pamac! On my Manjaro machine they were already installed :)
+
+Interestingly the `xdg-desktop-portal-gnome` [also needs additional `xdg-desktop-portal-gtk`](https://bbs.archlinux.org/viewtopic.php?pid=2086805#p2086805), which Manjaro also had installed already.
+
+Also I needed to configure two Chrome flags:
+
+```shell
+--> chrome://flags/#ozone-platform-hint = Auto
+--> chrome://flags/#enable-webrtc-pipewire-capturer = Enabled
+```
+
+![](chrome-flags-screensharing.png)
+
+
+Sadly my screensharing still didn't work! Looking into the service `xdg-desktop-portal-gnome`, I found lot's of `Failed to associate portal window with parent window` errors:
+
+```shell
+$ systemctl --user status xdg-desktop-portal-gnome
+● xdg-desktop-portal-gnome.service - Portal service (GNOME implementation)
+     Loaded: loaded (/usr/lib/systemd/user/xdg-desktop-portal-gnome.service; static)
+     Active: active (running) since Wed 2023-11-15 10:10:53 CET; 1h 21min ago
+   Main PID: 3064 (xdg-desktop-por)
+      Tasks: 18 (limit: 38392)
+     Memory: 78.5M
+        CPU: 1.517s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/xdg-desktop-portal-gnome.service
+             └─3064 /usr/lib/xdg-desktop-portal-gnome
+
+Nov 15 10:10:53 pikelinux systemd[2077]: Starting Portal service (GNOME implementation)...
+Nov 15 10:10:53 pikelinux systemd[2077]: Started Portal service (GNOME implementation).
+Nov 15 10:32:10 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+Nov 15 10:32:15 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+Nov 15 11:18:35 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+Nov 15 11:18:41 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+Nov 15 11:32:00 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+Nov 15 11:32:10 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
+```
+
+
+But luckily there's a great post here https://askubuntu.com/a/1398720/451114
+
+And what was missing on my machine was `pipewire-media-session`! And yes, searching for and installing the package states that it's deprecated. 
+
+```shell
+>>> pipewire-media-session is deprecated and will soon be removed from the
+    repositories. Please use 'wireplumber' instead.
+```
+
+But the community doesn't really seem to be quite fixed on that `wireplumber` is always the best option: https://forum.endeavouros.com/t/pipewire-pipewire-media-session-vs-wireplumber/20705 Also the replacement of pipewire-media-session [has been undone already](https://archlinux.org/news/undone-replacement-of-pipewire-media-session-with-wireplumber/). So I gave it a try:
+
+```shell
+pamac install pipewire-media-session
+systemctl --user enable pipewire-media-session
+systemctl --user start pipewire-media-session
+```
+
+Now `systemctl --user status pipewire-media-session` and `systemctl --user status xdg-desktop-portal-gnome` should be green and running without fault:
+
+```shell
+$ systemctl --user status pipewire-media-session
+● pipewire-media-session.service - PipeWire Media Session Manager
+     Loaded: loaded (/usr/lib/systemd/user/pipewire-media-session.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2023-11-15 11:48:50 CET; 2s ago
+   Main PID: 14990 (pipewire-media-)
+      Tasks: 3 (limit: 38392)
+     Memory: 1.8M
+        CPU: 9ms
+     CGroup: /user.slice/user-1000.slice/user@1000.service/session.slice/pipewire-media-session.service
+             └─14990 /usr/bin/pipewire-media-session
+
+Nov 15 11:48:50 pikelinux systemd[2077]: Started PipeWire Media Session Manager.
+
+
+$ systemctl --user status xdg-desktop-portal-gnome
+● xdg-desktop-portal-gnome.service - Portal service (GNOME implementation)
+     Loaded: loaded (/usr/lib/systemd/user/xdg-desktop-portal-gnome.service; static)
+     Active: active (running) since Wed 2023-11-15 11:49:04 CET; 20s ago
+   Main PID: 15030 (xdg-desktop-por)
+      Tasks: 5 (limit: 38392)
+     Memory: 28.5M
+        CPU: 348ms
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/xdg-desktop-portal-gnome.service
+             └─15030 /usr/lib/xdg-desktop-portal-gnome
+
+Nov 15 11:49:04 pikelinux systemd[2077]: Starting Portal service (GNOME implementation)...
+Nov 15 11:49:04 pikelinux systemd[2077]: Started Portal service (GNOME implementation).
+```
+
+Now in Microsoft Teams again I granted the screensharing access to my whole screen:
+
+![](screensharing-grant-access-to-whole-screen.png)
+
+Finally Screensharing in Teams worked:
+
+![](screensharing-working-chrome.png)
+
+
+
+## Zoom
+
+Theres's also simply a flatpack package available: https://flathub.org/apps/us.zoom.Zoom
+
+Install it via Manjaros package manager (gui or command line.
+
+
+## Slack
+
+Flatpack is here to help again: https://flathub.org/apps/com.slack.Slack
+
+
+## Miro
+
+There's a snap available here https://snapcraft.io/install/miro/manjaro
+
+To be able to use Snapcraft on Manjaro we need to install it first - again either via gui or command line:
+
+```
+sudo pacman -S snapd
+```
+
+Also enable the systemd unit that manages the main snap communication socket:
+
+```
+sudo systemctl enable --now snapd.socket
+```
+
+Restart your system to ensure snap’s paths are updated correctly. 
+
+Now install Miro via snap:
+
+```
+sudo snap install miro
+```
+
+
+## SIP Telefone app for Linux
+
+If you're like me you want to be callable even when you're mobile phone is on airplane mode. The easiest solution is a SIP phone client software, where you just configure your SIP credentials and can use your laptop or desktop machine to have phone calls.
+
+There's huge list of SIP clients around, but already on my Android phone there are only a few that really work.
+
+While writing this docs I found out about linphone https://www.linphone.org/technical-corner/linphone, which has clients for nearly every OS. And it's also OpenSource, developed on GitLab.com https://gitlab.linphone.org/BC/public/linphone-desktop
+
+I installed the AUR AppImage package https://aur.archlinux.org/packages/linphone-desktop-appimage (the other https://aur.archlinux.org/packages/linphone-desktop didn't work on my machine).
+
+My first tests worked like a charm!
+
+
+
+## Google Drive Desktop file sync
+
+On my Mac I had a Desktop App to sync my Drive files into my file manager. Sadly there's no Google Drive Desktop for Linux https://support.google.com/drive/answer/10838124
+
+There's a great post on baeldung about this topic: https://www.baeldung.com/linux/google-drive-guide (see also https://askubuntu.com/questions/1390151/google-drive-in-ubuntu-with-full-local-copy)
+
+But we have some alternatives. First thing I checked was `gnome-online-accounts` (see [the docs](https://help.gnome.org/users/gnome-help/stable/accounts-which-application.html.en)). This package is already pre-installed on Manjaro. Simply head over to `preference / online accounts` and log in to your Google account. Now the Gnome file manager should have a new entry, where you can access your Google Drive files: 
+
+![](gnome-online-accounts-google-drive-integration.png)
+
+But [they aren't stored locally sadly](https://gitlab.gnome.org/GNOME/nautilus/-/issues/784), so they will be downloaded every time you access them. And as the baeldung post states, the file names are completely obscured on the command line. E.g. if you have a file called `bla` in the file manager, it's named like `11lfzX-8dH_eWtf2JWa3caRtodOnlXDbN` on the command line and you even need to access it in a weird way like `cd '/run/user/1000/gvfs/google-drive:host=gmail.com,user=myemail'`.
+
+
+If you need locally stored files with Google Drive, IMHO there's no perfect solution. Maybe https://www.insynchq.com is worth a try, but also costs some 30 bucks...
+
+
+
+
+## Dropbox Linux client
+
+There's a official Dropbox Linux client https://help.dropbox.com/de-de/installs/linux-commands and also a AUR package https://aur.archlinux.org/packages/dropbox
+
+Compared to Drive the integration is superb. Start the app via the application menu and after the login you will find a Dropbox icon right at the top of your Gnome Desktop - just as you are used to on a Mac:
+
+![](dropbox-gnome-integration.png)
+
+Also you can drag the folder `Dropbox` in your profile directory into the left menu bar of the Gnome file manager. And voila: you have the same integration as on a Mac!
+
+![](dropbox-gnome-filemanager-integration.png)
+
+
+
+## Remarkable Linux client
+
+https://github.com/reHackable/awesome-reMarkable
+
+I use the eBook-Reader like notepad Remarkable and on a Mac and on iPhone/Android there are quite good clients to use the cloud sync. There's no current AUR package sadly, but snap is here to help:
+
+https://snapcraft.io/remarkable-desktop and specifically for Manjaro https://snapcraft.io/install/remarkable-desktop/manjaro
+
+But sadly, this Windows app packaged as a wine app didn't work on my machine. It started once, but after an update didn't start anymore.
+
+
+
+Other strategies to get to your documents using Linux:
+
+If you only want to get single documents and download them to your desktop, there's a simple web interface you can enable inside your Remarkable tablet's settings. Just head over to `Settings / Storage` and enable `USB web interface`. My remarkable is now accessible via http://10.11.99.1/ and I can download single documents easily.
+
+We can even create a Gnome Dock Icon to link to the Remarkable web interface: https://askubuntu.com/questions/1045723/how-to-add-website-url-shortcut-to-ubuntu-dock-on-ubuntu-18-04 ([here's an icon](https://www.reddit.com/r/RemarkableTablet/comments/m063iu/i_was_tired_of_the_macos_app_icon_so_i_redesigned/) if you'd like)
+
+
+
+
+
+# Development software
+
+## VSCode
+
+There are plenty of ways to install VSCode to Linux / Manjaro. First I tried the flathub package, but then I realised that a Flatpack packaged app is really separated from the rest of the system. Since it runs in a container. So no other development tools or frameworks will work inside the VSCode container, we would have to install it all into it... 
+
+Although I love the idea of container packaged software, I don't really wanted to live it that kind of hard fashioned with my development setup. Sure, development containers would also work. But I wanted kind of a more traditional installation. And luckily there's the AUR package https://aur.archlinux.org/packages/visual-studio-code-bin . Beware of the `-bin` in the name of the package, the other one installs the `Code - OSS` app instead. [See the differences here](https://github.com/microsoft/vscode/wiki/Differences-between-the-repository-and-Visual-Studio-Code).
+
+
+
+
+
+# Misc
+
+## HDD Encryption
+
+Manjaro supports full disk encryption right from the OS setup based on LUKS (the defacto Linux standard for hdd encryption). The [best way seems to be a fresh install with HDD encryption](https://forum.manjaro.org/t/disk-encryption/139464/2), since many parts need to be altered. Here's also a good discussion about it:
+
+https://forum.manjaro.org/t/manjaro-with-full-disk-encryption-how-fast-how-stable/136855/17
+
+verdict:
+* Use Manjaro over Arch (since the installer has the encryption process baked in)
+* Use a SSD with Manjaro/Arch to have nearly no performance issues due to encryption
+* bootup will be a bit delayed (few seconds, depending on CPU speed), because GRUB doesn't use multiple processors and needs to decrypt the partition container. If you want to speed this up, you can either manually encrypt things and leave out the boot partition (long process, not recommended). Or lower the LUKS iteration cycles for the boot partion: https://unix.stackexchange.com/questions/497746/how-to-change-luks-encryption-difficulty-on-manjaro-full-disk-encrypt
+
+
+https://forum.manjaro.org/t/howto-boot-without-a-password-for-encrypted-root-partition/44684/4
+
+
+## Printer setup
+
+Here I learned to __ALWAYS__ search for an AUR package first!
+
+I have an old Canon MX870 printer, which has ultra low cost and separate printer cartridges. So I went to the Canon Driver page and it was simply empty. No Linux drivers at all. A google search got me to [driverscollection.com](https://de.driverscollection.com/?file_cid=4527114398460c3f541c53ebcfb), but there were only `.deb` (Ubuntu, Debian) and `.rpm` (Fedora, SUSE) packages. The build from source also didn't work, since file were missing... (I already searched for "How to Install .DEB files in Arch Based Distros" - [don't do that!](https://forum.manjaro.org/t/how-to-install-deb/34452/3)).
+
+But than I simply searched for `canon mx870 linux driver arch` - and there really was an AUR package for my printer! Horay!
+
+Now installing `canon-pixma-mx870-complete` gave me some errors - but I managed to solve them. The first error indicated, that I didn't have `autoconf` installed. So I installed it with `pamac`. The second error got me to the missing `automake`, which I also installed. Then I had a strange error with the [lib32-libusb-compat package](https://archlinux.org/packages/core/x86_64/libusb/), which is needed by the `canon-pixma-mx870-complete` package: 
+
+```
+syntax error near unexpected token `LIBUSB,'
+```
+
+Luckily [this thread](https://bbs.archlinux.org/viewtopic.php?id=251492) and also the [`lib32-libusb-compat` AUR package site](https://aur.archlinux.org/packages/lib32-libusb-compat) got me to the problem: I needed to install [`base-devel` AUR package](https://archlinux.org/packages/core/any/base-devel/) first!
+
+Now running `pamac install lib32-libusb-compat canon-pixma-mx870-complete` ran like a charm!
+
+The scanner now worked using the app `Document Scanner`.
+
+
+But there was no printer configured out-of-the-box. Although the driver (`PPD` files) seem to be present correctly.
+
+In the normal settings dialog had a `add printer` button, but my Canon network printer wasn't found there and I couldn't add it though:
+
+![](system-settings-printer.png)
+
+So I went over to the console and started the CUPS gui directly just executing `system-config-printer`. Now adding a new printer in the CUPS gui also shows `network printers` - and there my Canon MX870 showed up!
+
+![](cups-gui-network-printer-found.png)
+
+Really nice. I clicked `forward` and the Driver was automatically set to `Canon MX870 series - CUPS+Gutenprint v5.3.4 Simplified`, which may also work - but we installed the original `Canon MX870 series Ver.3.30` right?! Therefore I changed the created printer after the wizard is finished and clicked on `brand and model` and change... and then selected the correct driver from the database:
+
+![](change-printer-driver.png)
+
+I hoped my printer would work now, but trying to print a example page didn't work. A final piece was missing.
+
+But finally I found it: In the printer's settings under `guidelines` the condition was not `activated`. I activated the printer here and everything worked fine!
+
+
+
+As a side note: If you want to use the open source drivers and need to configure `ldp` protocol instead, here's maybe help: https://bbs.archlinux.org/viewtopic.php?id=143349
+
+Also the CUPS system itself is a very good source of information http://localhost:631/help/network.html
+
+
+
+## Samsung Smart Switch
+
+As already said I dropped my iPhone in favour of Android. As Samsung has a great overall package of 5 years of updates, I went for a S23.
+
+On my Mac I used Samsung Smart Switch for the backups, which was quite easy to use. So why not use it on Manjaro too? Well, there's no Linux version sadly :( https://www.samsung.com/de/apps/smart-switch/
+
+Now we have a few alternatives left: https://xdaforums.com/t/samsung-smart-swith-for-ubuntu.3335276/ & https://superuser.com/questions/1314720/how-to-backup-a-samsung-mobile-to-linux 
+
+We could use Wine as a Windows app emulator on Linux, but there doesn't seem to be good experiences with Smart Switch sadly. In the Wine database [this is rated as garbage](https://appdb.winehq.org/objectManager.php?sClass=application&iId=17967).
+
+I opted for the VirtualBox / Windows path. I already had a project in place here, where I could simply follow the guide and have a running Windows box in minutes: https://github.com/jonashackt/windows-vagrant-ansible (well at least I thought so, because the base Vagrant box Edge dev was discontinued by Microsoft).
+
+But luckily we only need to get a Windows VirtualBox VM here, no automation with Ansible or Vagrant for now.
+
+So just do the following:
+
+### Download Windows 11 evaluation VirtualBox .ova
+
+But maybe there's help & there is a way to add an already existant VirtualBox `.ova` as a VagrantBox: https://gist.github.com/aondio/66a79be10982f051116bc18f1a5d07dc. So let's try it.
+
+Download a pre-packaged VirtualBox `.ova` here https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/ which already includes an evaluation version of Windows 11. The link should download the VirtualBox `.zip` file (22gigs will take their time depending on your Internet speed).
+
+
+### Import .ova into VirtualBox
+
+Unpack the `WinDev2309Eval.ova`.
+
+Then add it to the local VirtualBox installation [via `VBoxManage import`](https://docs.oracle.com/en/virtualization/virtualbox/6.0/user/vboxmanage-import.html):
+
+```
+VBoxManage import ~/Downloads/WinDev2309Eval.VirtualBox/WinDev2309Eval.ova
+```
+
+This may take some time:
+
+```
+$ VBoxManage import ~/Downloads/WinDev2309Eval.VirtualBox/WinDev2309Eval.ova             1 ✘ 
+0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+Interpreting /home/jonashackt/Downloads/WinDev2309Eval.VirtualBox/WinDev2309Eval.ova...
+OK.
+Disks:
+  vmdisk1	134217728000	-1	http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized	WinDev2309Eval-disk001.vmdk	-1	-1	
+
+Virtual system 0:
+ 0: Suggested OS type: "Windows11_64"
+    (change with "--vsys 0 --ostype <type>"; use "list ostypes" to list all possible values)
+ 1: Suggested VM name "WinDev2309Eval"
+    (change with "--vsys 0 --vmname <name>")
+ 2: Suggested VM group "/"
+    (change with "--vsys 0 --group <group>")
+ 3: Suggested VM settings file name "/home/jonashackt/VirtualBox VMs/WinDev2309Eval/WinDev2309Eval.vbox"
+    (change with "--vsys 0 --settingsfile <filename>")
+ 4: Suggested VM base folder "/home/jonashackt/VirtualBox VMs"
+    (change with "--vsys 0 --basefolder <path>")
+ 5: Number of CPUs: 4
+    (change with "--vsys 0 --cpus <n>")
+ 6: Guest memory: 8192 MB
+    (change with "--vsys 0 --memory <MB>")
+ 7: USB controller
+    (disable with "--vsys 0 --unit 7 --ignore")
+ 8: Network adapter: orig NAT, config 3, extra slot=0;type=NAT
+ 9: SATA controller, type AHCI
+    (disable with "--vsys 0 --unit 9 --ignore")
+10: Hard disk image: source image=WinDev2309Eval-disk001.vmdk, target path=WinDev2309Eval-disk001.vmdk, controller=9;port=0
+    (change target path with "--vsys 0 --unit 10 --disk path";
+    change controller with "--vsys 0 --unit 10 --controller <index>";
+    change controller port with "--vsys 0 --unit 10 --port <n>";
+    disable with "--vsys 0 --unit 10 --ignore")
+0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+Successfully imported the appliance.
+```
+
+Now the box is already available inside your VirtualBox gui. 
+
+
+### Accessing USB devices (like Samsung Android phones) inside the Windows guest
+
+Be sure to configure the following tweaks manually (until we get the automation working again):
+
+* Video: Scalingfactor to 200% (in order to see something)
+* USB: Activate the USB controller and choose `USB 3.0-Controller (xHCI)`
+
+Finally VirtualBox needs access to the USB devices, that are connected to the host. This doesn't work out-of-the-box and produces the following error, if we run a `VBoxManage list usbhost`:
+
+```
+$ VBoxManage list usbhost
+Failed to access the USB subsystem.
+VirtualBox is not currently allowed to access USB devices. 
+You can change this by adding your user to the 'vboxusers' group. 
+Please see the user manual for a more detailed explanation
+...
+```
+
+But [there's help](https://askubuntu.com/a/377781/451114): We need to add our user to the `vboxusers` group via:
+
+```
+sudo usermod -a -G vboxusers $USER
+```
+
+Log off or even restart your machine - and then check via `groups $USER`, if your user is part of the group `vboxusers`. 
+
+Now the command `VBoxManage list usbhost` should work as expected.
+
+Finally go to your VirtualBoxed Windows and click on `Devices / USB` and select your phone (which will exclusively bind your phone to the guest Windows for now). With that SmartSwitch should be able to access the phone:
+
+![](samsung-smart-switch-accessing-phone-host-usb.png)
+
+
+
+### Creating a shared folder between Manjaro host and Windows guest
+
+In order to create a shared folder to be able to have a directory, where Samsung Smart Switch can store our backup on the Manjaro host, we need to install the Guest Additions into our Windows guest https://www.virtualbox.org/manual/ch04.html#additions-windows
+
+In order to do that, we need to configure a optical drive to our VM:
+
+![](add-optical-drive-with-guest-additions-iso.png)
+
+Therefor head over to our VM's settings in VirtualBox and add a optical drive in the storage settings. Now VirtualBox will create a virtual optical drive with the guest additions iso inside.
+
+Now inside the VM go to `Devices / insert guest additions` and they should show up inside the Windows Explorer.
+
+Double click on the drive and the installation should start:
+
+![](install-guest-additions-via-double-click-on-drive.png))
+
+Follow through the Wizard and finally do the reboot required.
+
+Finally create a shared folder in the VirtualBox settings of the VM. Be sure to check `bind automatically` and `permanently create`!
+
+Now the folder should be available as a new networking location inside the Windows guest.
+
+Fire up Samsung SmartSwitch and try to do a backup to your Manjaro host: Use somthing like `Z:\Samsung\SmartSwitch` as a path, since SmartSwitch will complain that it hasn't enough space available.
+
+![](samsung-smartswitch-use-manjaro-host-directory-for-backup.png)
+
+
+
+# Docker
 
 Is there a way to install and use Docker on Linux? Yes I know: Linux containers were invented ON Linux. So why do we need Docker at all?
 
@@ -367,488 +852,6 @@ Inside the MacOS instance, open a terminal and execute:
 sudo mdutil -i off -a
 ```
 
-
-
-## Taming the terminal
-
-https://forum.manjaro.org/t/bash-with-autocomplete-and-fancy-flags/112108
-
-https://github.com/romkatv/powerlevel10k
-
-
-
-## Small tweaks
-
-* Switching back to last tab on Firefox: https://superuser.com/questions/290704/switching-back-to-last-tab-on-firefox
-
-* Night mode: https://www.reddit.com/r/ManjaroLinux/comments/ogf1iy/turn_on_night_mode/
-
-* Unable to cancel a command on Gnome terminal? Have a look at https://unix.stackexchange.com/a/33017/140406 and delete every `Strg+C` keyboard shortcut in the Gnome terminal settings!
-
-
-
-
-
-# Productivity Software on Linux
-
-## Enable flathub Repository in Manjaro package management
-
-Simply activate in Add/Remove Programs, since it's already installed - as the docs state https://flatpak.org/setup/Manjaro
-
-> Flatpak is installed by default on Manjaro 20 or higher.
-
-> To enable its support, navigate to the Software Manager (Add/Remove Programs)
-
-> Click on the triple line menu [or dots depending on the Desktop Environment] on the right, in the drop down menu select "Preferences"
-
-> Navigate to the "Flatpak" tab and slide the toggle to Enable Flatpak support (it is also possible to enable checking for updates, which is recommended).
-
-Flatpack is super useful to install many Desktop applications like MS Teams, Zoom, Slack etc.
-
-
-## Spotlight like search
-
-https://github.com/cerebroapp/cerebro
-
-Install it via the AUR package https://aur.archlinux.org/packages/cerebro-bin
-
-
-## Microsoft Teams
-
-Microsoft announced to discontinue the Linux client in favour of a Progressive Web App (PWA), which is integrated in Microsoft Edge for Linux:
-
-https://techcommunity.microsoft.com/t5/microsoft-teams-blog/microsoft-teams-progressive-web-app-now-available-on-linux/ba-p/3669846
-
-But installing Microsoft Edge on Linux (although available) doesn't feel right to me. Alternativeley one can use the (also flatpack managed) unofficial `Teams for Linux` client (which is hosted on GitHub https://github.com/IsmaelMartinez/teams-for-linux and powered by Electron).
-
-
-__Both solutions (Microsoft Edge + PWA and unofficial Teams for Linux) didn't work for me the way I thought they would.__ The unofficial client didn't startup when clicking on the Teams links. And joining a meeting using the ID and password from the app itself also started my default Browser Firefox, which is said to be not a good basis for Teams.
-
-> In the end I settled just with using Chrome (installed via Flatpack) and using the url copied from my Google calender in Firefox.
-
-But there was one thing that didn't work: Screensharing!
-
-
-### Screensharing in Microsoft Teams running in Chrome installed via Flatpack
-
-Flatpack isolates apps from the main OS. I simply forgot that, as I tried to use screen sharing with Microsoft Teams from within Chrome.
-
-But [the problem is well known](https://techcommunity.microsoft.com/t5/microsoft-teams/unable-to-share-screen-on-ms-teams-in-google-chrome-109-0-5414/m-p/3717629) - and there's a solution: https://wiki.archlinux.org/title/XDG_Desktop_Portal:
-
-> "Portals were designed for use with applications sandboxed through Flatpak, but any application can use portals to provide uniform access to features independent of desktops and toolkits. This is commonly used, for example, to allow screen sharing on Wayland via PipeWire"
-
-So let's install `xdg-desktop-portal xdg-desktop-portal-gnome` via pamac! On my Manjaro machine they were already installed :)
-
-Interestingly the `xdg-desktop-portal-gnome` [also needs additional `xdg-desktop-portal-gtk`](https://bbs.archlinux.org/viewtopic.php?pid=2086805#p2086805), which Manjaro also had installed already.
-
-Also I needed to configure two Chrome flags:
-
-```shell
---> chrome://flags/#ozone-platform-hint = Auto
---> chrome://flags/#enable-webrtc-pipewire-capturer = Enabled
-```
-
-![](chrome-flags-screensharing.png)
-
-
-Sadly my screensharing still didn't work! Looking into the service `xdg-desktop-portal-gnome`, I found lot's of `Failed to associate portal window with parent window` errors:
-
-```shell
-$ systemctl --user status xdg-desktop-portal-gnome
-● xdg-desktop-portal-gnome.service - Portal service (GNOME implementation)
-     Loaded: loaded (/usr/lib/systemd/user/xdg-desktop-portal-gnome.service; static)
-     Active: active (running) since Wed 2023-11-15 10:10:53 CET; 1h 21min ago
-   Main PID: 3064 (xdg-desktop-por)
-      Tasks: 18 (limit: 38392)
-     Memory: 78.5M
-        CPU: 1.517s
-     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/xdg-desktop-portal-gnome.service
-             └─3064 /usr/lib/xdg-desktop-portal-gnome
-
-Nov 15 10:10:53 pikelinux systemd[2077]: Starting Portal service (GNOME implementation)...
-Nov 15 10:10:53 pikelinux systemd[2077]: Started Portal service (GNOME implementation).
-Nov 15 10:32:10 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
-Nov 15 10:32:15 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
-Nov 15 11:18:35 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
-Nov 15 11:18:41 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
-Nov 15 11:32:00 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
-Nov 15 11:32:10 pikelinux xdg-desktop-por[3064]: Failed to associate portal window with parent window 
-```
-
-
-But luckily there's a great post here https://askubuntu.com/a/1398720/451114
-
-And what was missing on my machine was `pipewire-media-session`! And yes, searching for and installing the package states that it's deprecated. 
-
-```shell
->>> pipewire-media-session is deprecated and will soon be removed from the
-    repositories. Please use 'wireplumber' instead.
-```
-
-But the community doesn't really seem to be quite fixed on that `wireplumber` is always the best option: https://forum.endeavouros.com/t/pipewire-pipewire-media-session-vs-wireplumber/20705 Also the replacement of pipewire-media-session [has been undone already](https://archlinux.org/news/undone-replacement-of-pipewire-media-session-with-wireplumber/). So I gave it a try:
-
-```shell
-pamac install pipewire-media-session
-systemctl --user enable pipewire-media-session
-systemctl --user start pipewire-media-session
-```
-
-Now `systemctl --user status pipewire-media-session` and `systemctl --user status xdg-desktop-portal-gnome` should be green and running without fault:
-
-```shell
-$ systemctl --user status pipewire-media-session
-● pipewire-media-session.service - PipeWire Media Session Manager
-     Loaded: loaded (/usr/lib/systemd/user/pipewire-media-session.service; enabled; preset: enabled)
-     Active: active (running) since Wed 2023-11-15 11:48:50 CET; 2s ago
-   Main PID: 14990 (pipewire-media-)
-      Tasks: 3 (limit: 38392)
-     Memory: 1.8M
-        CPU: 9ms
-     CGroup: /user.slice/user-1000.slice/user@1000.service/session.slice/pipewire-media-session.service
-             └─14990 /usr/bin/pipewire-media-session
-
-Nov 15 11:48:50 pikelinux systemd[2077]: Started PipeWire Media Session Manager.
-
-
-$ systemctl --user status xdg-desktop-portal-gnome
-● xdg-desktop-portal-gnome.service - Portal service (GNOME implementation)
-     Loaded: loaded (/usr/lib/systemd/user/xdg-desktop-portal-gnome.service; static)
-     Active: active (running) since Wed 2023-11-15 11:49:04 CET; 20s ago
-   Main PID: 15030 (xdg-desktop-por)
-      Tasks: 5 (limit: 38392)
-     Memory: 28.5M
-        CPU: 348ms
-     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/xdg-desktop-portal-gnome.service
-             └─15030 /usr/lib/xdg-desktop-portal-gnome
-
-Nov 15 11:49:04 pikelinux systemd[2077]: Starting Portal service (GNOME implementation)...
-Nov 15 11:49:04 pikelinux systemd[2077]: Started Portal service (GNOME implementation).
-```
-
-Now in Microsoft Teams again I granted the screensharing access to my whole screen:
-
-![](screensharing-grant-access-to-whole-screen.png)
-
-Finally Screensharing in Teams worked:
-
-![](screensharing-working-chrome.png)
-
-
-
-## Zoom
-
-Theres's also simply a flatpack package available: https://flathub.org/apps/us.zoom.Zoom
-
-Install it via Manjaros package manager (gui or command line.
-
-
-## Slack
-
-Flatpack is here to help again: https://flathub.org/apps/com.slack.Slack
-
-
-## Miro
-
-There's a snap available here https://snapcraft.io/install/miro/manjaro
-
-To be able to use Snapcraft on Manjaro we need to install it first - again either via gui or command line:
-
-```
-sudo pacman -S snapd
-```
-
-Also enable the systemd unit that manages the main snap communication socket:
-
-```
-sudo systemctl enable --now snapd.socket
-```
-
-Restart your system to ensure snap’s paths are updated correctly. 
-
-Now install Miro via snap:
-
-```
-sudo snap install miro
-```
-
-
-## SIP Telefone app for Linux
-
-If you're like me you want to be callable even when you're mobile phone is on airplane mode. The easiest solution is a SIP phone client software, where you just configure your SIP credentials and can use your laptop or desktop machine to have phone calls.
-
-There's huge list of SIP clients around, but already on my Android phone there are only a few that really work.
-
-While writing this docs I found out about linphone https://www.linphone.org/technical-corner/linphone, which has clients for nearly every OS. And it's also OpenSource, developed on GitLab.com https://gitlab.linphone.org/BC/public/linphone-desktop
-
-I installed the AUR AppImage package https://aur.archlinux.org/packages/linphone-desktop-appimage (the other https://aur.archlinux.org/packages/linphone-desktop didn't work on my machine).
-
-My first tests worked like a charm!
-
-
-
-## Google Drive Desktop file sync
-
-On my Mac I had a Desktop App to sync my Drive files into my file manager. Sadly there's no Google Drive Desktop for Linux https://support.google.com/drive/answer/10838124
-
-There's a great post on baeldung about this topic: https://www.baeldung.com/linux/google-drive-guide (see also https://askubuntu.com/questions/1390151/google-drive-in-ubuntu-with-full-local-copy)
-
-But we have some alternatives. First thing I checked was `gnome-online-accounts` (see [the docs](https://help.gnome.org/users/gnome-help/stable/accounts-which-application.html.en)). This package is already pre-installed on Manjaro. Simply head over to `preference / online accounts` and log in to your Google account. Now the Gnome file manager should have a new entry, where you can access your Google Drive files: 
-
-![](gnome-online-accounts-google-drive-integration.png)
-
-But [they aren't stored locally sadly](https://gitlab.gnome.org/GNOME/nautilus/-/issues/784), so they will be downloaded every time you access them. And as the baeldung post states, the file names are completely obscured on the command line. E.g. if you have a file called `bla` in the file manager, it's named like `11lfzX-8dH_eWtf2JWa3caRtodOnlXDbN` on the command line and you even need to access it in a weird way like `cd '/run/user/1000/gvfs/google-drive:host=gmail.com,user=myemail'`.
-
-
-If you need locally stored files with Google Drive, IMHO there's no perfect solution. Maybe https://www.insynchq.com is worth a try, but also costs some 30 bucks...
-
-
-
-
-## Dropbox Linux client
-
-There's a official Dropbox Linux client https://help.dropbox.com/de-de/installs/linux-commands and also a AUR package https://aur.archlinux.org/packages/dropbox
-
-Compared to Drive the integration is superb. Start the app via the application menu and after the login you will find a Dropbox icon right at the top of your Gnome Desktop - just as you are used to on a Mac:
-
-![](dropbox-gnome-integration.png)
-
-Also you can drag the folder `Dropbox` in your profile directory into the left menu bar of the Gnome file manager. And voila: you have the same integration as on a Mac!
-
-![](dropbox-gnome-filemanager-integration.png)
-
-
-
-## Remarkable Linux client
-
-https://github.com/reHackable/awesome-reMarkable
-
-I use the eBook-Reader like notepad Remarkable and on a Mac and on iPhone/Android there are quite good clients to use the cloud sync. There's no current AUR package sadly, but snap is here to help:
-
-https://snapcraft.io/remarkable-desktop and specifically for Manjaro https://snapcraft.io/install/remarkable-desktop/manjaro
-
-But sadly, this Windows app packaged as a wine app didn't work on my machine. It started once, but after an update didn't start anymore.
-
-
-
-Other strategies to get to your documents using Linux:
-
-If you only want to get single documents and download them to your desktop, there's a simple web interface you can enable inside your Remarkable tablet's settings. Just head over to `Settings / Storage` and enable `USB web interface`. My remarkable is now accessible via http://10.11.99.1/ and I can download single documents easily.
-
-We can even create a Gnome Dock Icon to link to the Remarkable web interface: https://askubuntu.com/questions/1045723/how-to-add-website-url-shortcut-to-ubuntu-dock-on-ubuntu-18-04 ([here's an icon](https://www.reddit.com/r/RemarkableTablet/comments/m063iu/i_was_tired_of_the_macos_app_icon_so_i_redesigned/) if you'd like)
-
-
-
-
-
-# Development software
-
-## VSCode
-
-There are plenty of ways to install VSCode to Linux / Manjaro. First I tried the flathub package, but then I realised that a Flatpack packaged app is really separated from the rest of the system. Since it runs in a container. So no other development tools or frameworks will work inside the VSCode container, we would have to install it all into it... 
-
-Although I love the idea of container packaged software, I don't really wanted to live it that kind of hard fashioned with my development setup. Sure, development containers would also work. But I wanted kind of a more traditional installation. And luckily there's the AUR package https://aur.archlinux.org/packages/visual-studio-code-bin . Beware of the `-bin` in the name of the package, the other one installs the `Code - OSS` app instead. [See the differences here](https://github.com/microsoft/vscode/wiki/Differences-between-the-repository-and-Visual-Studio-Code).
-
-
-
-
-# Misc
-
-## HDD Encryption
-
-Manjaro supports full disk encryption right from the OS setup based on LUKS (the defacto Linux standard for hdd encryption). The [best way seems to be a fresh install with HDD encryption](https://forum.manjaro.org/t/disk-encryption/139464/2), since many parts need to be altered. Here's also a good discussion about it:
-
-https://forum.manjaro.org/t/manjaro-with-full-disk-encryption-how-fast-how-stable/136855/17
-
-verdict:
-* Use Manjaro over Arch (since the installer has the encryption process baked in)
-* Use a SSD with Manjaro/Arch to have nearly no performance issues due to encryption
-* bootup will be a bit delayed (few seconds, depending on CPU speed), because GRUB doesn't use multiple processors and needs to decrypt the partition container. If you want to speed this up, you can either manually encrypt things and leave out the boot partition (long process, not recommended). Or lower the LUKS iteration cycles for the boot partion: https://unix.stackexchange.com/questions/497746/how-to-change-luks-encryption-difficulty-on-manjaro-full-disk-encrypt
-
-
-https://forum.manjaro.org/t/howto-boot-without-a-password-for-encrypted-root-partition/44684/4
-
-
-## Printer setup
-
-Here I learned to __ALWAYS__ search for an AUR package first!
-
-I have an old Canon MX870 printer, which has ultra low cost and separate printer cartridges. So I went to the Canon Driver page and it was simply empty. No Linux drivers at all. A google search got me to [driverscollection.com](https://de.driverscollection.com/?file_cid=4527114398460c3f541c53ebcfb), but there were only `.deb` (Ubuntu, Debian) and `.rpm` (Fedora, SUSE) packages. The build from source also didn't work, since file were missing... (I already searched for "How to Install .DEB files in Arch Based Distros" - [don't do that!](https://forum.manjaro.org/t/how-to-install-deb/34452/3)).
-
-But than I simply searched for `canon mx870 linux driver arch` - and there really was an AUR package for my printer! Horay!
-
-Now installing `canon-pixma-mx870-complete` gave me some errors - but I managed to solve them. The first error indicated, that I didn't have `autoconf` installed. So I installed it with `pamac`. The second error got me to the missing `automake`, which I also installed. Then I had a strange error with the [lib32-libusb-compat package](https://archlinux.org/packages/core/x86_64/libusb/), which is needed by the `canon-pixma-mx870-complete` package: 
-
-```
-syntax error near unexpected token `LIBUSB,'
-```
-
-Luckily [this thread](https://bbs.archlinux.org/viewtopic.php?id=251492) and also the [`lib32-libusb-compat` AUR package site](https://aur.archlinux.org/packages/lib32-libusb-compat) got me to the problem: I needed to install [`base-devel` AUR package](https://archlinux.org/packages/core/any/base-devel/) first!
-
-Now running `pamac install lib32-libusb-compat canon-pixma-mx870-complete` ran like a charm!
-
-The scanner now worked using the app `Document Scanner`.
-
-
-But there was no printer configured out-of-the-box. Although the driver (`PPD` files) seem to be present correctly.
-
-In the normal settings dialog had a `add printer` button, but my Canon network printer wasn't found there and I couldn't add it though:
-
-![](system-settings-printer.png)
-
-So I went over to the console and started the CUPS gui directly just executing `system-config-printer`. Now adding a new printer in the CUPS gui also shows `network printers` - and there my Canon MX870 showed up!
-
-![](cups-gui-network-printer-found.png)
-
-Really nice. I clicked `forward` and the Driver was automatically set to `Canon MX870 series - CUPS+Gutenprint v5.3.4 Simplified`, which may also work - but we installed the original `Canon MX870 series Ver.3.30` right?! Therefore I changed the created printer after the wizard is finished and clicked on `brand and model` and change... and then selected the correct driver from the database:
-
-![](change-printer-driver.png)
-
-I hoped my printer would work now, but trying to print a example page didn't work. A final piece was missing.
-
-But finally I found it: In the printer's settings under `guidelines` the condition was not `activated`. I activated the printer here and everything worked fine!
-
-
-
-As a side note: If you want to use the open source drivers and need to configure `ldp` protocol instead, here's maybe help: https://bbs.archlinux.org/viewtopic.php?id=143349
-
-Also the CUPS system itself is a very good source of information http://localhost:631/help/network.html
-
-
-
-## Samsung Smart Switch
-
-As already said I dropped my iPhone in favour of Android. As Samsung has a great overall package of 5 years of updates, I went for a S23.
-
-On my Mac I used Samsung Smart Switch for the backups, which was quite easy to use. So why not use it on Manjaro too? Well, there's no Linux version sadly :( https://www.samsung.com/de/apps/smart-switch/
-
-Now we have a few alternatives left: https://xdaforums.com/t/samsung-smart-swith-for-ubuntu.3335276/ & https://superuser.com/questions/1314720/how-to-backup-a-samsung-mobile-to-linux 
-
-We could use Wine as a Windows app emulator on Linux, but there doesn't seem to be good experiences with Smart Switch sadly. In the Wine database [this is rated as garbage](https://appdb.winehq.org/objectManager.php?sClass=application&iId=17967).
-
-I opted for the VirtualBox / Windows path. I already had a project in place here, where I could simply follow the guide and have a running Windows box in minutes: https://github.com/jonashackt/windows-vagrant-ansible (well at least I thought so, because the base Vagrant box Edge dev was discontinued by Microsoft).
-
-But luckily we only need to get a Windows VirtualBox VM here, no automation with Ansible or Vagrant for now.
-
-So just do the following:
-
-### Download Windows 11 evaluation VirtualBox .ova
-
-But maybe there's help & there is a way to add an already existant VirtualBox `.ova` as a VagrantBox: https://gist.github.com/aondio/66a79be10982f051116bc18f1a5d07dc. So let's try it.
-
-Download a pre-packaged VirtualBox `.ova` here https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/ which already includes an evaluation version of Windows 11. The link should download the VirtualBox `.zip` file (22gigs will take their time depending on your Internet speed).
-
-
-### Import .ova into VirtualBox
-
-Unpack the `WinDev2309Eval.ova`.
-
-Then add it to the local VirtualBox installation [via `VBoxManage import`](https://docs.oracle.com/en/virtualization/virtualbox/6.0/user/vboxmanage-import.html):
-
-```
-VBoxManage import ~/Downloads/WinDev2309Eval.VirtualBox/WinDev2309Eval.ova
-```
-
-This may take some time:
-
-```
-$ VBoxManage import ~/Downloads/WinDev2309Eval.VirtualBox/WinDev2309Eval.ova             1 ✘ 
-0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
-Interpreting /home/jonashackt/Downloads/WinDev2309Eval.VirtualBox/WinDev2309Eval.ova...
-OK.
-Disks:
-  vmdisk1	134217728000	-1	http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized	WinDev2309Eval-disk001.vmdk	-1	-1	
-
-Virtual system 0:
- 0: Suggested OS type: "Windows11_64"
-    (change with "--vsys 0 --ostype <type>"; use "list ostypes" to list all possible values)
- 1: Suggested VM name "WinDev2309Eval"
-    (change with "--vsys 0 --vmname <name>")
- 2: Suggested VM group "/"
-    (change with "--vsys 0 --group <group>")
- 3: Suggested VM settings file name "/home/jonashackt/VirtualBox VMs/WinDev2309Eval/WinDev2309Eval.vbox"
-    (change with "--vsys 0 --settingsfile <filename>")
- 4: Suggested VM base folder "/home/jonashackt/VirtualBox VMs"
-    (change with "--vsys 0 --basefolder <path>")
- 5: Number of CPUs: 4
-    (change with "--vsys 0 --cpus <n>")
- 6: Guest memory: 8192 MB
-    (change with "--vsys 0 --memory <MB>")
- 7: USB controller
-    (disable with "--vsys 0 --unit 7 --ignore")
- 8: Network adapter: orig NAT, config 3, extra slot=0;type=NAT
- 9: SATA controller, type AHCI
-    (disable with "--vsys 0 --unit 9 --ignore")
-10: Hard disk image: source image=WinDev2309Eval-disk001.vmdk, target path=WinDev2309Eval-disk001.vmdk, controller=9;port=0
-    (change target path with "--vsys 0 --unit 10 --disk path";
-    change controller with "--vsys 0 --unit 10 --controller <index>";
-    change controller port with "--vsys 0 --unit 10 --port <n>";
-    disable with "--vsys 0 --unit 10 --ignore")
-0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
-Successfully imported the appliance.
-```
-
-Now the box is already available inside your VirtualBox gui. 
-
-
-### Accessing USB devices (like Samsung Android phones) inside the Windows guest
-
-Be sure to configure the following tweaks manually (until we get the automation working again):
-
-* Video: Scalingfactor to 200% (in order to see something)
-* USB: Activate the USB controller and choose `USB 3.0-Controller (xHCI)`
-
-Finally VirtualBox needs access to the USB devices, that are connected to the host. This doesn't work out-of-the-box and produces the following error, if we run a `VBoxManage list usbhost`:
-
-```
-$ VBoxManage list usbhost
-Failed to access the USB subsystem.
-VirtualBox is not currently allowed to access USB devices. 
-You can change this by adding your user to the 'vboxusers' group. 
-Please see the user manual for a more detailed explanation
-...
-```
-
-But [there's help](https://askubuntu.com/a/377781/451114): We need to add our user to the `vboxusers` group via:
-
-```
-sudo usermod -a -G vboxusers $USER
-```
-
-Log off or even restart your machine - and then check via `groups $USER`, if your user is part of the group `vboxusers`. 
-
-Now the command `VBoxManage list usbhost` should work as expected.
-
-Finally go to your VirtualBoxed Windows and click on `Devices / USB` and select your phone (which will exclusively bind your phone to the guest Windows for now). With that SmartSwitch should be able to access the phone:
-
-![](samsung-smart-switch-accessing-phone-host-usb.png)
-
-
-
-### Creating a shared folder between Manjaro host and Windows guest
-
-In order to create a shared folder to be able to have a directory, where Samsung Smart Switch can store our backup on the Manjaro host, we need to install the Guest Additions into our Windows guest https://www.virtualbox.org/manual/ch04.html#additions-windows
-
-In order to do that, we need to configure a optical drive to our VM:
-
-![](add-optical-drive-with-guest-additions-iso.png)
-
-Therefor head over to our VM's settings in VirtualBox and add a optical drive in the storage settings. Now VirtualBox will create a virtual optical drive with the guest additions iso inside.
-
-Now inside the VM go to `Devices / insert guest additions` and they should show up inside the Windows Explorer.
-
-Double click on the drive and the installation should start:
-
-![](install-guest-additions-via-double-click-on-drive.png))
-
-Follow through the Wizard and finally do the reboot required.
-
-Finally create a shared folder in the VirtualBox settings of the VM. Be sure to check `bind automatically` and `permanently create`!
-
-Now the folder should be available as a new networking location inside the Windows guest.
-
-Fire up Samsung SmartSwitch and try to do a backup to your Manjaro host: Use somthing like `Z:\Samsung\SmartSwitch` as a path, since SmartSwitch will complain that it hasn't enough space available.
-
-![](samsung-smartswitch-use-manjaro-host-directory-for-backup.png)
 
 
 

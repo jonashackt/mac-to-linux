@@ -316,6 +316,56 @@ Although I love the idea of container packaged software, I don't really wanted t
 
 # Misc
 
+## Print multiple jpgs to PDF
+
+The easy "Vorschau" app on MacOS had this feature, but I can't find it in gthumb. But it's there somehow https://gnulinux.ch/bilder-drucken with the great [ImageMagick](https://en.wikipedia.org/wiki/ImageMagick).
+
+Execute the following on your console:
+
+```shell
+convert *.jpg multiples.pdf
+```
+
+Now you can even print all sites on one pdf.
+
+
+
+## Write into and sign PDFs
+
+According to https://askubuntu.com/questions/1330708/fill-sign-pdf-on-ubuntu the best seems to be Xournal++ (there is also an older Xournal)
+
+https://xournalpp.github.io/
+
+The correct Arch/Manjaro package is named `xournalpp`:
+
+```shell
+pamac install xournalpp
+```
+
+I also often read about LibreOffice Draw (like in here https://askubuntu.com/a/786795/451114), where you can
+
+* open the pdf
+* then "export as pdf"
+* set "jpeg compression quality" to 50% and "image resolution" to 150 dpi
+
+
+## Configure LibreOffice tabbed style (like MS Office)
+
+Install LibreOffice (see https://wiki.archlinux.org/title/LibreOffice) via the Arch package [`libreoffice-fresh`](https://archlinux.org/packages/?name=libreoffice-fresh):
+
+```shell
+pamac install libreoffice-fresh
+```
+
+LibreOffice looks way better than OpenOffice. But if you want to have it even slicker with the Tabbed User Interface style, then have a look here: https://itsfoss.com/libreoffice-ribbon-interface/:
+
+Go to `View/User Interface...` and select `Tabbed`.
+
+![](libreoffice-tabbed-view-with-darkmode-color-icons.png)
+
+Choose another Icon theme, if the dark (black and white) icons aren't what you're looking for https://askubuntu.com/questions/979032/libreoffice-icons-hard-to-see-with-dark-themes
+
+
 ## HDD Encryption
 
 Manjaro supports full disk encryption right from the OS setup based on LUKS (the defacto Linux standard for hdd encryption). The [best way seems to be a fresh install with HDD encryption](https://forum.manjaro.org/t/disk-encryption/139464/2), since many parts need to be altered. Here's also a good discussion about it:
@@ -881,5 +931,7 @@ https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non
 * Get Linux keyboard (with print, no Apple cmd, F-keys etc.)
 
 * backup
+
+* Zoom screen sharing
 
 * Office 365 on Linux?

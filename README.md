@@ -300,6 +300,27 @@ We can even create a Gnome Dock Icon to link to the Remarkable web interface: ht
 
 
 
+## Remote Desktop on Manjaro
+
+I had the issue, that the kids were playing on the Wii in the basement where my Manjaro PC is located (waiting for my new Laptop ever since). So I grabbed a Laptop from my Mother's husband (also on Manjaro) and wanted to connect via Remote Desktop to my machine.
+
+According to https://www.howtogeek.com/429190/how-to-set-up-remote-desktop-on-ubuntu VNC isn't a secure protocol anymore (see also https://en.wikipedia.org/wiki/Virtual_Network_Computing#Security) and VNC is interfering with Wayland, which is the default on modern Linux desktops right now:
+
+> In fact, the VNC back end for the GNOME remote desktop functionality has been turned off by default in GNOME, and Ubuntu have followed suit. Restoring it requires building various components from source with the appropriate build flags reinstated.
+
+And 
+
+> The preferred method, and one natively supported by GNOME and Ubuntu, is to use the remote desktop protocol instead of VNC.
+
+But nevertheless don't use plain RDP over the internet without VPN etc.!
+
+This is super cool: So just enter the system settings menu, click on `Sharing` and activate `Remote Desktop` and `Remote Control` on the machine you want to connect to.
+
+Now on the client machine you need an RDP client. There are many around, like remmina https://software.manjaro.org/package/remmina#! or Thincast https://thincast.com/en . I tried Thincast and used my basement machines local network IP and the credentials from the Gnome Sharing menu. And it worked like a charm:
+
+![](remote-desktop-with-gnome-sharing-and-thincast.png)
+
+In Thincast the option `View / Smart Sizing` comes in very helpful, if the screens of Client and Server do have different resolutions.
 
 
 # Development software

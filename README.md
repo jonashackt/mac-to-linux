@@ -449,6 +449,69 @@ Also the CUPS system itself is a very good source of information http://localhos
 
 
 
+## Balsamiq Mockups on Linux
+
+There's no official Balsamiq version for Linux https://balsamiq.com/wireframes/desktop/docs/linux/
+
+But you can use Bottles https://usebottles.com (https://github.com/bottlesdevs/Bottles) to install the Windows version of Balsamiq.
+
+> See also https://ostechnix.com/run-windows-software-on-linux-with-bottles/ for more info
+
+Therefore install `Bottles` via the Package Manager `pamac` or via Flatpack:
+
+```shell
+pamac install bottles
+```
+
+Thereafter finish the UI's Wizard:
+
+![](bottles-wizard.png)
+
+Now we need to download the Balsamiq Windows installer file like `Balsamiq_Wireframes_4.7.4_x64_Setup.exe` from https://balsamiq.com/wireframes/desktop/.
+
+Back in Bottles you need to create a new bottle. I choose `Application`, named it `Balsamiq` and just went with the defaults.
+
+![](balsamiq-bottle-creation.png)
+
+Then let Bottles setup the bottle. This may take a while. If the bottle is ready, hit the `Run Executable...` button and select the downloaded `Balsamiq_Wireframes_4.7.4_x64_Setup.exe`. The balasamic setup wizard should appear:
+
+![](balsamic-setup-wizard.png)
+
+Now click on `Install for all users` and hit `Next` on dir selection, desktop shortcut and then `Install`. Finally click on `launch Balsamiq` and Balsamiq should appear:
+
+![](balsamic-runs-on-linux.png)
+
+If your Balsamiq is hardly readable (e.g. because you have set Manjaro's screen scaling to 200%), you may need to adjust the Bottle's display settings. Therefore head over to `Options` section and click on `Settings`. Now scroll down to `Display` section and select the `Advanced Display Settings`. Finally tweak the `Screen Scaling` settings. For me the default was `96 DPI`. I doubled it according to my Manjaro screen scaling of 200% to `192 DPI`: 
+
+![](bottles-screen-setting-dpi.png)
+
+Now Balsamiq looked wonderful:
+
+![](balsamic-scaled-200percent.png)
+
+See also https://forum.usebottles.com/t/how-to-scale-the-bottles-application-for-hidpi/862
+
+
+
+If you're asking yourself where to find file that you're saving in Balsamiq, just have a look into your profile. All bottles reside in `.var/app/com.usebottles.bottles/data/bottles/bottles`. If you save the file `New Project 1.bmpr` directly to the `My Computer / (C:)`, you'll find it there:
+
+```shell
+$ ls ~/.var/app/com.usebottles.bottles/data/bottles/bottles
+$ cd Balsamiq/drive_c
+$ ls -la
+total 112
+drwxr-xr-x  7 jonashackt jonashackt  4096  4. Jan 20:38  .
+drwxr-xr-x  7 jonashackt jonashackt  4096  4. Jan 20:38  ..
+-rw-r--r--  1 jonashackt jonashackt 86016  4. Jan 20:38 'New Project 1.bmpr'
+drwxr-xr-x  4 jonashackt jonashackt  4096  4. Jan 19:57  ProgramData
+drwxr-xr-x  7 jonashackt jonashackt  4096  4. Jan 19:57 'Program Files'
+drwxr-xr-x  6 jonashackt jonashackt  4096  4. Jan 19:47 'Program Files (x86)'
+drwxr-xr-x  4 jonashackt jonashackt  4096  4. Jan 19:47  users
+drwxr-xr-x 21 jonashackt jonashackt  4096  4. Jan 19:49  windows
+```
+
+
+
 ## Samsung Smart Switch
 
 As already said I dropped my iPhone in favour of Android. As Samsung has a great overall package of 5 years of updates, I went for a S23.

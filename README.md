@@ -199,14 +199,16 @@ Finally Screensharing in Teams worked:
 
 ## Zoom
 
-Theres's also simply a flatpack package available: https://flathub.org/apps/us.zoom.Zoom
+If you want Screensharing to work, don't use the Flatpack package, use the Arch one https://aur.archlinux.org/packages/zoom
 
-Install it via Manjaros package manager (gui or command line.
+Install it via Manjaros package manager (gui or command line).
 
 
 ## Slack
 
 Flatpack is here to help again: https://flathub.org/apps/com.slack.Slack
+
+But if you want working drag and drop, you might want to use the Arch package https://aur.archlinux.org/packages/slack-desktop
 
 
 ## Miro

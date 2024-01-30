@@ -203,6 +203,18 @@ If you want Screensharing to work, don't use the Flatpack package, use the Arch 
 
 Install it via Manjaros package manager (gui or command line).
 
+There are great tips at https://wiki.archlinux.org/title/Zoom_Meetings
+
+
+### Issue: login data & SSO not saved after restart (of system or Zoom app only)
+
+It's annoying to have to login into SSO every time I use Zoom or restarted my system. 
+
+The simple solution is to delete/rename the `~/.zoom` directory (see https://www.reddit.com/r/Zoom/comments/10vfbtk/comment/j8gxunn/)!
+
+Now the settings will be successfully saved in `/home/jonashackt/.config/zoomus.conf` (which doesn't work, when the `~/.zoom` directory persists)
+
+
 
 ## Slack
 

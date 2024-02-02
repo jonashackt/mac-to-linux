@@ -25,6 +25,8 @@ I tried to come up with some:
 
 * Rolling releases: I hate big releases! So I don't want to reinstall my system every year like most of the people are used to from MacOS, Ubuntu, Fedora etc. I want a rolling release distro.
 
+There are some popular options with rolling releases like https://distrowatch.com/table.php?distribution=endeavour
+
 `tbd: more info on distro choosing`
 
 Finally I opted for Manjaro Linux https://manjaro.org/, which is based on Arch Linux.
@@ -68,7 +70,7 @@ You can either use a self-encrypting SSD or encryt the whole file system (or fol
 
 https://wiki.archlinux.org/title/Data-at-rest_encryption
 
-> A very strong disk encryption setup (e.g. full system encryption with authenticity checking and no plaintext boot partition) is required to stand a chance against professional attackers who are able to tamper with your system before you use it. [...] **The best remedy might be [hardware-based full-disk encryption](https://wiki.archlinux.org/title/Self-encrypting_drives) and Trusted Computing.** (aka Self-encrypting SSDs) 
+> A very strong disk encryption setup (e.g. full system encryption with authenticity checking and no plaintext boot partition) is required to stand a chance against professional attackers who are able to tamper with your system before you use it. [...] The best remedy might be [hardware-based full-disk encryption](https://wiki.archlinux.org/title/Self-encrypting_drives) and Trusted Computing. (aka Self-encrypting SSDs) 
 
 
 ### Self-encrypting SSD (TCG OPAL 2) support (incl. Hardware acceleration)
@@ -76,7 +78,7 @@ https://wiki.archlinux.org/title/Data-at-rest_encryption
 https://wiki.archlinux.org/title/Self-encrypting_drives
 
 
-
+As I also read about security concerns about TPMs and 
 
 
 ### Encryt whole file system with LUKS
@@ -96,13 +98,7 @@ verdict:
 
 https://forum.manjaro.org/t/howto-boot-without-a-password-for-encrypted-root-partition/44684/4
 
-
-
-
-
-
-
-
+In the Manjaro installer, the LUKS encryption is easily setup. Simply check `Encrypt system` and set a password:
 
 
 
@@ -1093,12 +1089,14 @@ https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non
 
 
 
-# Open Topics
+### Encryption
 
-* Get Linux keyboard (with print, no Apple cmd, F-keys etc.)
+https://pulsesecurity.co.nz/advisories/tpm-luks-bypass
+
+
+
+# Open Topics
 
 * backup
 
-* Zoom screen sharing
-
-* Office 365 on Linux?
+https://github.com/restic/restic

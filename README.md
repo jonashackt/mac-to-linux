@@ -2,7 +2,7 @@
 Experimenting with leaving my Mac in favour of a Linux machine
 
 
-## Why going from Mac to Linux?
+# Why going from Mac to Linux?
 
 After many years (nearly 9) of using a MacBook and fancy Apple stuff I found myself in thinking about leaving the golden cage.
 
@@ -15,7 +15,7 @@ And I remembered my old values of free standards, free software, free choice... 
 So as time went by the thought of switching my main machine from Mac to a Linux box got bigger and bigger. Finally I cought myself in reading through laptop tests at https://www.notebookcheck.com :)
 
 
-## Choosing a distro
+## Choosing a distro: Why not going rolling release & AUR?
 
 That one is hard. Because if you ask, everybody yells at you :D 
 
@@ -30,22 +30,81 @@ I tried to come up with some:
 Finally I opted for Manjaro Linux https://manjaro.org/, which is based on Arch Linux.
 
 
+# Manjaro Wiki main page
 
-## Taming the terminal
-
-https://forum.manjaro.org/t/bash-with-autocomplete-and-fancy-flags/112108
-
-https://github.com/romkatv/powerlevel10k
+https://wiki.manjaro.org/index.php?title=Main_Page
 
 
 
-## Small tweaks
 
-* Switching back to last tab on Firefox: https://superuser.com/questions/290704/switching-back-to-last-tab-on-firefox
 
-* Night mode: https://www.reddit.com/r/ManjaroLinux/comments/ogf1iy/turn_on_night_mode/
+# Install Manjaro Linux
 
-* Unable to cancel a command on Gnome terminal? Have a look at https://unix.stackexchange.com/a/33017/140406 and delete every `Strg+C` keyboard shortcut in the Gnome terminal settings!
+Mostly nowadays that should be the UEFI guide that's interesting for you https://wiki.manjaro.org/index.php/UEFI_-_Install_Guide
+
+Download the matching ISO here https://manjaro.org/download/
+
+Format the `.iso` file into a USB stick. If you're on a Mac e.g. use https://etcher.balena.io.
+
+If you already have a Linux with Gnome running, you can use the `Disks` utility: Start `Disks`, select your USB stick, click on the two gears icons and select `Restore Partition Image`. Now find your downloaded e.g. `manjaro-gnome-23.1.3-240113-linux66.iso` from your file system and hit `Restore Image`:
+
+![](gnome-disks-format-usb-stick-with-iso.png)
+
+
+## Prepare your UEFI for Manjaro installation
+
+Disable Secure Boot in your UEFI setup. If you have concerns, see this thread and especially this answer: https://forum.manjaro.org/t/is-it-possible-to-enable-secure-boot/16156/12
+
+> Since everything is installed by a package manager from a trusted source (packages are signed and have checksums like secure boot does), malicious code is not a problem, but Windows has potentially such a problem. The drivers are not builtin the kernel, but have to be installed from other sources etc etc… **I don’t see a real benefit from using secure boot on a linux system**, but more or less having a good feeling to be secure from users point of view.
+
+Although [you could implement Secure Boot with Linux](https://wiki.archlinux.org/title/Unified_Extensible_Firmware_Interface/Secure_Boot), it isn't 
+
+
+## HDD Encryption
+
+If you're working for a company chances are that you have will have to use encryption with your harddrive.
+
+You can either use a self-encrypting SSD or encryt the whole file system (or folders). The Arch docs have direct us into the first solution if possible, since the latter can become quite complex (although supported by Manjaro installer).
+
+https://wiki.archlinux.org/title/Data-at-rest_encryption
+
+> A very strong disk encryption setup (e.g. full system encryption with authenticity checking and no plaintext boot partition) is required to stand a chance against professional attackers who are able to tamper with your system before you use it. [...] **The best remedy might be [hardware-based full-disk encryption](https://wiki.archlinux.org/title/Self-encrypting_drives) and Trusted Computing.** (aka Self-encrypting SSDs) 
+
+
+### Self-encrypting SSD (TCG OPAL 2) support (incl. Hardware acceleration)
+
+https://wiki.archlinux.org/title/Self-encrypting_drives
+
+
+
+
+
+### Encryt whole file system with LUKS
+
+https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system
+
+https://wiki.archlinux.org/title/Data-at-rest_encryption
+
+Manjaro supports full disk encryption right from the OS setup based on LUKS (the defacto Linux standard for hdd encryption). The [best way seems to be a fresh install with HDD encryption](https://forum.manjaro.org/t/disk-encryption/139464/2), since many parts need to be altered. Here's also a good discussion about it:
+
+https://forum.manjaro.org/t/manjaro-with-full-disk-encryption-how-fast-how-stable/136855/17
+
+verdict:
+* Use Manjaro over Arch (since the installer has the encryption process baked in)
+* Use a SSD with Manjaro/Arch to have nearly no performance issues due to encryption
+* bootup will be a bit delayed (few seconds, depending on CPU speed), because GRUB doesn't use multiple processors and needs to decrypt the partition container. If you want to speed this up, you can either manually encrypt things and leave out the boot partition (long process, not recommended). Or lower the LUKS iteration cycles for the boot partion: https://unix.stackexchange.com/questions/497746/how-to-change-luks-encryption-difficulty-on-manjaro-full-disk-encrypt
+
+https://forum.manjaro.org/t/howto-boot-without-a-password-for-encrypted-root-partition/44684/4
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -337,6 +396,8 @@ Now on the client machine you need an RDP client. There are many around, like re
 In Thincast the option `View / Smart Sizing` comes in very helpful, if the screens of Client and Server do have different resolutions.
 
 
+
+
 # Development software
 
 ## VSCode
@@ -347,9 +408,29 @@ Although I love the idea of container packaged software, I don't really wanted t
 
 
 
+## Taming the terminal
+
+https://forum.manjaro.org/t/bash-with-autocomplete-and-fancy-flags/112108
+
+https://github.com/romkatv/powerlevel10k
+
+* Unable to cancel a command on Gnome terminal? Have a look at https://unix.stackexchange.com/a/33017/140406 and delete every `Strg+C` keyboard shortcut in the Gnome terminal settings!
+
+
+
+
+
 
 
 # Misc
+
+## Small tweaks
+
+* Switching back to last tab on Firefox: https://superuser.com/questions/290704/switching-back-to-last-tab-on-firefox
+
+* Night mode: https://www.reddit.com/r/ManjaroLinux/comments/ogf1iy/turn_on_night_mode/
+
+
 
 ## Print multiple jpgs to PDF
 
@@ -401,19 +482,7 @@ Go to `View/User Interface...` and select `Tabbed`.
 Choose another Icon theme, if the dark (black and white) icons aren't what you're looking for https://askubuntu.com/questions/979032/libreoffice-icons-hard-to-see-with-dark-themes
 
 
-## HDD Encryption
 
-Manjaro supports full disk encryption right from the OS setup based on LUKS (the defacto Linux standard for hdd encryption). The [best way seems to be a fresh install with HDD encryption](https://forum.manjaro.org/t/disk-encryption/139464/2), since many parts need to be altered. Here's also a good discussion about it:
-
-https://forum.manjaro.org/t/manjaro-with-full-disk-encryption-how-fast-how-stable/136855/17
-
-verdict:
-* Use Manjaro over Arch (since the installer has the encryption process baked in)
-* Use a SSD with Manjaro/Arch to have nearly no performance issues due to encryption
-* bootup will be a bit delayed (few seconds, depending on CPU speed), because GRUB doesn't use multiple processors and needs to decrypt the partition container. If you want to speed this up, you can either manually encrypt things and leave out the boot partition (long process, not recommended). Or lower the LUKS iteration cycles for the boot partion: https://unix.stackexchange.com/questions/497746/how-to-change-luks-encryption-difficulty-on-manjaro-full-disk-encrypt
-
-
-https://forum.manjaro.org/t/howto-boot-without-a-password-for-encrypted-root-partition/44684/4
 
 
 ## Printer setup

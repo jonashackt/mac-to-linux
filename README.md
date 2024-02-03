@@ -110,223 +110,6 @@ https://www.tuxedocomputers.com/en/Infos/Help-Support/Instructions/Change-LUKS-e
 
 
 
-#### Change keyboard layout of (LUKS) full disk encryption login
-
-I experienced an issue using the simple Manjaro installer option to enable disk encryption:
-
-I changed the keyboard layout from `us` to german `de` in the Manjaro installer. Both my passwords for Manjaro login and for the disk encryption contain special characters like `€`, `@` and the like. Now booting up and trying to enter the system just installed, I faced an error while trying to decrypt the disk. I couldn't pass the HDD encryption login :(
-
-After several attempts it came to my mind that there might be a mismatch of the keyboard layout provided in the Manjaro installer and used in the encryption login. And yes, that's the issue here (also in other distros):
-
-https://forum.manjaro.org/t/keyboard-layout-for-boot-encryption-password/115990 
-
-https://unix.stackexchange.com/questions/342353/problem-keyboard-layout-in-boot-with-luks 
-
-https://askubuntu.com/questions/1500505/change-keyboard-layout-for-full-disk-encryption-login
-
-https://discussion.fedoraproject.org/t/keyboard-layout-is-always-english-when-unlocking-encrypted-drives-on-silverblue-kinoite-sericea/81095
-
-
-https://bbs.archlinux.org/viewtopic.php?id=240739
-
-
-
-
-
-https://wiki.archlinux.org/title/Dm-crypt/System_configuration#mkinitcpio
-
-> Provides support for non-US keymaps for typing encryption passwords; it must come before the encrypt hook, otherwise you will need to enter your encryption password using the default US keymap. Set your keymap in /etc/vconsole.conf, see [Keyboard configuration in console#Persistent configuration](https://wiki.archlinux.org/title/Linux_console/Keyboard_configuration#Persistent_configuration). 
-
-https://wiki.archlinux.org/title/Linux_console/Keyboard_configuration#Persistent_configuration
-
-> A persistent keymap can be set in /etc/vconsole.conf, which is read by systemd on start-up. The KEYMAP variable is used for specifying the keymap. If the variable is empty or not set, the us keymap is used as default value
-
-
-
-There might be a problem with Grub in Stage 1! Yes, GRUB has multiple stages: 1 & 2. Only in 2 the above hints seem to work. But there's help:
-
-
-
-
-
-The issue might be that we're looking for a solution in the wrong GRUB stage (2). 
-
-
-Wow, this was a deep dive I didn't thought I would have needed. I dig into the stages of booting a computer again, which I hadn't visited in a while! So roughly the firmware ((U)EFI, formerly "BIOS") looks for a boot manager located in the Master Boot Record (MBR) on the first disk. On a Linux system featuring the GRUB bootloader it also looks for the startup file `grubx64.efi` on the EFI partition (the small 300MB partition using FAT32). The EFI partition is mounted to `/boot/efi`.
-
-GRUB then loads `boot.img`, `core.img`, `/boot/grub/grub.cfg` and needed `mod` files (drivers). With that a UI can be displayed, a keyboard beeing evaluated and an OS started.
-
-Nowing that, we can have [a look into the dm-crypt docs](https://wiki.archlinux.org/title/Dm-crypt/Specialties#Securing_the_unencrypted_boot_partition):
-
-> The `/boot` partition and the Master Boot Record are the two areas of the disk that are not encrypted
-
-But there's a special feature in GRUB, where [the bootloader GRUB has the ability to unlock a LUKS encrypted `/boot` partition](https://wiki.archlinux.org/title/Dm-crypt/Specialties#Securing_the_unencrypted_boot_partition).
-
-Thus we can have a encrypted `/boot` partition and the Manjaro installer uses exactly that feature! 
-
-And here we have our issue mentioned in the Note in https://wiki.archlinux.org/title/GRUB#Encrypted_/boot:
-
-> If you use a special keymap, a default GRUB installation will not know it. This is relevant for how to enter the passphrase to unlock the LUKS blockdevice. See /Tips and tricks#Manual configuration of core image for early boot.
-
-There's also a hint: See [/Tips and tricks#Manual configuration of core image for early boot](https://wiki.archlinux.org/title/GRUB/Tips_and_tricks#Manual_configuration_of_core_image_for_early_boot):
-
-> If you require a special keymap or other complex steps that GRUB is not able to configure automatically in order to make /boot available to the GRUB environment, you can generate a core image yourself. On UEFI systems, the core image is the grubx64.efi file that is loaded by the firmware on boot. Building your own core image will allow you to embed any modules required for very early boot, as well as a configuration script to bootstrap GRUB. 
-
-**There we are!** 
-
-Following the docs let's generate our own core image (aka `core.img` mentioned above in the boot steps)! 
-
-Start by having a look into `/boot/grub/grub.cfg`:
-
-```shell
-$ sudo cat /boot/grub/grub.cfg
-
-menuentry 'Manjaro Linux' --class manjaro --class gnu-linux --class gnu --class os $menuentry_id_option 'agnulinux-simple-bdcf1234-abcd-ef12-34ab-cdef1234abcdef' {
-	savedefault
-	load_video
-	set gfxpayload=keep
-	insmod gzio
-	insmod part_gpt
-	insmod cryptodisk
-	insmod luks
-	insmod gcry_rijndael
-	insmod gcry_rijndael
-	insmod gcry_sha256
-	insmod ext2
-	cryptomount -u 1234abcdef1234abcdef1234abcdef
-	set root='cryptouuid/1234abcdef1234abcdef1234abcdef'
-	if [ x$feature_platform_search_hint = xy ]; then
-	  search --no-floppy --fs-uuid --set=root --hint='cryptouuid/1234abcdef1234abcdef1234abcdef'  bdcf1234-abcd-ef12-34ab-cdef1234abcdef
-	else
-	  search --no-floppy --fs-uuid --set=root bdcf1234-abcd-ef12-34ab-cdef1234abcdef
-	fi
-	linux	/boot/vmlinuz-6.6-x86_64 root=UUID=bdcf1234-abcd-ef12-34ab-cdef1234abcdef rw  quiet cryptdevice=UUID=bdcf1234-abcd-ef12-34ab-cdef1234abcdef:luks-bdcf1234-abcd-ef12-34ab-cdef1234abcdef root=/dev/mapper/luks-bdcf1234-abcd-ef12-34ab-cdef1234abcdef splash apparmor=1 security=apparmor udev.log_priority=3
-	initrd	/boot/intel-ucode.img /boot/initramfs-6.6-x86_64.img
-}
-```
-
-Look out for every `insmod` usage like `part_gpt`, `part_msdos`, `efi_gop` etc.
-
-Also search for the first `menuentry 'Manjaro Linux'` entry. Copy the whole menuentry into an editor (incl. `insmod gzio`, `insmod luks` etc). They all will need to be included in the core image, otherwise the system won't be able to decrypt your LUKS partition and thus render stuck in the GRUB boot. 
-
-Now we need to create a tarball `memdisk.tar` containing our keymap:
-
-```shell
-sudo grub-kbdcomp -o de.gkb de
-sudo tar cf memdisk.tar de.gkb
-```
-
-With this we can create a configuration `early-grub.cfg` file to be used in the GRUB core image. It leverages the same format as the regular `/boot/grub/grub.cfg`, but needs only a few lines to find the main config file on the `boot` partition. Create the `early-grub.cfg` in an editor:
-
-```shell
-set root=(memdisk)
-set prefix=($root)/
-
-terminal_input at_keyboard
-keymap /de.gkb
-
-cryptomount -u 1234abcdef1234abcdef1234abcdef
-set root='cryptouuid/1234abcdef1234abcdef1234abcdef'
-set prefix=($root)/grub
-
-configfile grub.cfg
-```
-
-Change the line `keymap /de.gkb` to match your specific keymap. Also exchange the lines `cryptomount -u 1234abcde...` and `set root='cryptouuid/1234a...` with the values copied into the editor from the Manjaro menuentry.
-
-Finally we can generate the `core.img` listing all of the modules from our Manjaro menuentry, along with any modules used in the `early-grub.cfg`. So from the latter we need `memdisk`, `tar`, `at_keyboard`, `keylayout` and `configfile`. Let's craft the `grub-mkimage` command:
-
-```shell
-sudo grub-mkimage -c early-grub.cfg -o "/boot/efi/EFI/Manjaro/grubx64.efi" -O x86_64-efi -d /usr/lib/grub/x86_64-efi/ -m memdisk.tar part_gpt part_msdos efi_gop efi_uga crypto cryptodisk luks gcry_rijndael gcry_sha256 diskfilter gzio ext2 fat memdisk tar at_keyboard usb_keyboard uhci ehci ahci keylayouts configfile
-```
-
-Here https://cryptsetup-team.pages.debian.net/cryptsetup/encrypted-boot.html#using-a-custom-keyboard-layout they have a hint
-
-> (Replace with ahci with a suitable module if the drive holding /boot isn’t a SATA drive supporting AHCI. Also, replace ext2 with a file system driver suitable for /boot if the file system isn’t ext2, ext3 or ext4.)
-
-and they are using `uhci ehci ahci` and since our efi mounted at `/boot/efi` is using FAT32, we should add `fat` also (according to [this so answer](https://stackoverflow.com/questions/45490299/grub-cant-recognize-fat32-filesystem-on-an-isohybrid-image/45515768#45515768)).
-
-
-
-
-
-
-
-
-Finally our new keymap is working as expected and it is possible to decrypt the encrypted LUKS partition.
-
-
-```shell
-sudo grub-mkstandalone -d /usr/lib/grub/x86_64-efi/ -O x86_64-efi --compress="xz" --modules="part_gpt part_msdos crypto cryptodisk luks disk diskfilter lvm" --fonts="unicode" -o "/boot/efi/EFI/Manjaro/grubx64.efi" "boot/grub/grub.cfg=/tmp/grub.cfg" "boot/grub/de.gkb=/tmp/de.gkb"
-```
-
-
-Now a strange `grub>` command prompt pops up.
-
-https://forum.manjaro.org/t/a-strange-grub-prompt-at-boot/126330
-
-
-I managed to [repair this by re-installing grub using a Linux live distro (Manjaro USB)](https://wiki.manjaro.org/index.php/GRUB/Restore_the_GRUB_Bootloader#EFI_System) and `manjaro-chroot -a`, decrypting and mounting the LUKS partitions beforehand:
-
-```shell
-# Show which partitions are available (here nvme0n1p6 and nvme0n1p4(efi partition))
-lsblk -f 
-
-# decrypt and mount LUKS encrypted partitions
-su
-cryptsetup luksOpen /dev/nvme0n1p6  nvme0n1p6_crypt 
-mount /dev/mapper/nvme0n1p6_crypt  /mnt
-mount /dev/nvme0n1p4  /mnt/boot/efi
-manjaro-chroot /mnt
-
-# Ignore cannot find a GRUB drive for /dev/sda1 errors, this is only your USB live distro
-sudo manjaro-chroot -a
-grub-probe: error: cannot find a GRUB drive for /dev/sda1.  Check your device.map.
-
-# Reinstall grub
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=manjaro --recheck 
-
-# Update grub configuration
-grub-mkconfig -o /boot/grub/grub.cfg 
-```
-
-
-
-
-
-https://superuser.com/questions/974833/change-the-keyboard-layout-of-grub-in-stage-1
-
-Here we will create a german layout for GRUB:
-
-Change line `GRUB_TERMINAL_INPUT=console` in `/etc/default/grub` to:
-
-```shell
-# to
-GRUB_TERMINAL_INPUT=at_keyboard
-```
-
-Add the following lines to `/etc/grub.d/40_custom`:
-
-```shell
-insmod keylayouts
-keymap /boot/grub/de.gkb
-```
-
-Run the following to add a german GRUB layout
-
-```shell
-sudo grub-kbdcomp -o /tmp/de.gkb de
-```
-
-Finally we need to add the german GRUB layout to `grub-mkstandalone`. Beware to tailor the `-o "/boot/efi/EFI/Manjaro/grubx64.efi"` to your distribution (instead of `Manjaro` it might be `linux` or others):
-
-```shell
-sudo grub-mkstandalone -d /usr/lib/grub/x86_64-efi/ -O x86_64-efi --compress="xz" --modules="part_gpt part_msdos crypto cryptodisk luks disk diskfilter lvm" --fonts="unicode" -o "/boot/efi/EFI/Manjaro/grubx64.efi" "boot/grub/grub.cfg=/tmp/grub.cfg" "boot/grub/de.gkb=/tmp/de.gkb"
-```
-
-Now bootup and try to use your new GRUB key layout :)
-
-
 
 
 
@@ -1292,6 +1075,253 @@ Inside the MacOS instance, open a terminal and execute:
 ```
 sudo mdutil -i off -a
 ```
+
+
+
+# Other
+
+#### Change keyboard layout of (LUKS) full disk encryption login
+
+> That's the documentation of an encounter I had with the GRUB bootloader using an LUKS encrypted `/boot` partition, which the Manjaro installer automatically creates, when using `Encrypt disk` in it. Using some "special" characters from the German keymap, the US keymap in GRUB stage 1 doesn't work as expected...  Please think of this paragraph of not complete and just use it as inspiration :) It took me hours and hours...
+
+
+
+I experienced an issue using the simple Manjaro installer option to enable disk encryption:
+
+I changed the keyboard layout from `us` to german `de` in the Manjaro installer. Both my passwords for Manjaro login and for the disk encryption contain special characters like `€`, `@` and the like. Now booting up and trying to enter the system just installed, I faced an error while trying to decrypt the disk. I couldn't pass the HDD encryption login :(
+
+After several attempts it came to my mind that there might be a mismatch of the keyboard layout provided in the Manjaro installer and used in the encryption login. And yes, that's the issue here (also in other distros):
+
+https://forum.manjaro.org/t/keyboard-layout-for-boot-encryption-password/115990 
+
+https://unix.stackexchange.com/questions/342353/problem-keyboard-layout-in-boot-with-luks 
+
+https://askubuntu.com/questions/1500505/change-keyboard-layout-for-full-disk-encryption-login
+
+https://discussion.fedoraproject.org/t/keyboard-layout-is-always-english-when-unlocking-encrypted-drives-on-silverblue-kinoite-sericea/81095
+
+
+https://bbs.archlinux.org/viewtopic.php?id=240739
+
+
+
+
+
+https://wiki.archlinux.org/title/Dm-crypt/System_configuration#mkinitcpio
+
+> Provides support for non-US keymaps for typing encryption passwords; it must come before the encrypt hook, otherwise you will need to enter your encryption password using the default US keymap. Set your keymap in /etc/vconsole.conf, see [Keyboard configuration in console#Persistent configuration](https://wiki.archlinux.org/title/Linux_console/Keyboard_configuration#Persistent_configuration). 
+
+https://wiki.archlinux.org/title/Linux_console/Keyboard_configuration#Persistent_configuration
+
+> A persistent keymap can be set in /etc/vconsole.conf, which is read by systemd on start-up. The KEYMAP variable is used for specifying the keymap. If the variable is empty or not set, the us keymap is used as default value
+
+
+
+There might be a problem with Grub in Stage 1! Yes, GRUB has multiple stages: 1 & 2. Only in 2 the above hints seem to work. But there's help:
+
+
+
+
+
+The issue might be that we're looking for a solution in the wrong GRUB stage (2). 
+
+
+Wow, this was a deep dive I didn't thought I would have needed. I dig into the stages of booting a computer again, which I hadn't visited in a while! So roughly the firmware ((U)EFI, formerly "BIOS") looks for a boot manager located in the Master Boot Record (MBR) on the first disk. On a Linux system featuring the GRUB bootloader it also looks for the startup file `grubx64.efi` on the EFI partition (the small 300MB partition using FAT32). The EFI partition is mounted to `/boot/efi`.
+
+GRUB then loads `boot.img`, `core.img`, `/boot/grub/grub.cfg` and needed `mod` files (drivers). With that a UI can be displayed, a keyboard beeing evaluated and an OS started.
+
+Nowing that, we can have [a look into the dm-crypt docs](https://wiki.archlinux.org/title/Dm-crypt/Specialties#Securing_the_unencrypted_boot_partition):
+
+> The `/boot` partition and the Master Boot Record are the two areas of the disk that are not encrypted
+
+But there's a special feature in GRUB, where [the bootloader GRUB has the ability to unlock a LUKS encrypted `/boot` partition](https://wiki.archlinux.org/title/Dm-crypt/Specialties#Securing_the_unencrypted_boot_partition).
+
+Thus we can have a encrypted `/boot` partition and the Manjaro installer uses exactly that feature! 
+
+And here we have our issue mentioned in the Note in https://wiki.archlinux.org/title/GRUB#Encrypted_/boot:
+
+> If you use a special keymap, a default GRUB installation will not know it. This is relevant for how to enter the passphrase to unlock the LUKS blockdevice. See /Tips and tricks#Manual configuration of core image for early boot.
+
+There's also a hint: See [/Tips and tricks#Manual configuration of core image for early boot](https://wiki.archlinux.org/title/GRUB/Tips_and_tricks#Manual_configuration_of_core_image_for_early_boot):
+
+> If you require a special keymap or other complex steps that GRUB is not able to configure automatically in order to make /boot available to the GRUB environment, you can generate a core image yourself. On UEFI systems, the core image is the grubx64.efi file that is loaded by the firmware on boot. Building your own core image will allow you to embed any modules required for very early boot, as well as a configuration script to bootstrap GRUB. 
+
+**There we are!** 
+
+Following the docs let's generate our own core image (aka `core.img` mentioned above in the boot steps)! 
+
+Start by having a look into `/boot/grub/grub.cfg`:
+
+```shell
+$ sudo cat /boot/grub/grub.cfg
+
+menuentry 'Manjaro Linux' --class manjaro --class gnu-linux --class gnu --class os $menuentry_id_option 'agnulinux-simple-bdcf1234-abcd-ef12-34ab-cdef1234abcdef' {
+	savedefault
+	load_video
+	set gfxpayload=keep
+	insmod gzio
+	insmod part_gpt
+	insmod cryptodisk
+	insmod luks
+	insmod gcry_rijndael
+	insmod gcry_rijndael
+	insmod gcry_sha256
+	insmod ext2
+	cryptomount -u 1234abcdef1234abcdef1234abcdef
+	set root='cryptouuid/1234abcdef1234abcdef1234abcdef'
+	if [ x$feature_platform_search_hint = xy ]; then
+	  search --no-floppy --fs-uuid --set=root --hint='cryptouuid/1234abcdef1234abcdef1234abcdef'  bdcf1234-abcd-ef12-34ab-cdef1234abcdef
+	else
+	  search --no-floppy --fs-uuid --set=root bdcf1234-abcd-ef12-34ab-cdef1234abcdef
+	fi
+	linux	/boot/vmlinuz-6.6-x86_64 root=UUID=bdcf1234-abcd-ef12-34ab-cdef1234abcdef rw  quiet cryptdevice=UUID=bdcf1234-abcd-ef12-34ab-cdef1234abcdef:luks-bdcf1234-abcd-ef12-34ab-cdef1234abcdef root=/dev/mapper/luks-bdcf1234-abcd-ef12-34ab-cdef1234abcdef splash apparmor=1 security=apparmor udev.log_priority=3
+	initrd	/boot/intel-ucode.img /boot/initramfs-6.6-x86_64.img
+}
+```
+
+Look out for every `insmod` usage like `part_gpt`, `part_msdos`, `efi_gop` etc.
+
+Also search for the first `menuentry 'Manjaro Linux'` entry. Copy the whole menuentry into an editor (incl. `insmod gzio`, `insmod luks` etc). They all will need to be included in the core image, otherwise the system won't be able to decrypt your LUKS partition and thus render stuck in the GRUB boot. 
+
+Now we need to create a tarball `memdisk.tar` containing our keymap:
+
+```shell
+sudo grub-kbdcomp -o de.gkb de
+sudo tar cf memdisk.tar de.gkb
+```
+
+With this we can create a configuration `early-grub.cfg` file to be used in the GRUB core image. It leverages the same format as the regular `/boot/grub/grub.cfg`, but needs only a few lines to find the main config file on the `boot` partition. Create the `early-grub.cfg` in an editor:
+
+```shell
+set root=(memdisk)
+set prefix=($root)/
+
+terminal_input at_keyboard
+keymap /de.gkb
+
+cryptomount -u 1234abcdef1234abcdef1234abcdef
+set root='cryptouuid/1234abcdef1234abcdef1234abcdef'
+set prefix=($root)/grub
+
+configfile grub.cfg
+```
+
+Change the line `keymap /de.gkb` to match your specific keymap. Also exchange the lines `cryptomount -u 1234abcde...` and `set root='cryptouuid/1234a...` with the values copied into the editor from the Manjaro menuentry.
+
+Finally we can generate the `core.img` listing all of the modules from our Manjaro menuentry, along with any modules used in the `early-grub.cfg`. So from the latter we need `memdisk`, `tar`, `at_keyboard`, `keylayout` and `configfile`. From [the debian docs](https://cryptsetup-team.pages.debian.net/cryptsetup/encrypted-boot.html#using-a-custom-keyboard-layout):
+
+> Don’t use grub-install here, as we need to pass an early configuration and a ramdisk. Instead, use grub-mkimage(1) with suitable image file name, format, and module list.
+
+Let's craft the `grub-mkimage` command:
+
+```shell
+sudo grub-mkimage -c early-grub.cfg -o "/boot/efi/EFI/Manjaro/grubx64.efi" -O x86_64-efi -d /usr/lib/grub/x86_64-efi/ -m memdisk.tar part_gpt part_msdos efi_gop efi_uga crypto cryptodisk luks gcry_rijndael gcry_sha256 diskfilter gzio ext2 fat memdisk tar at_keyboard usb_keyboard uhci ehci ahci keylayouts configfile
+```
+
+Here https://cryptsetup-team.pages.debian.net/cryptsetup/encrypted-boot.html#using-a-custom-keyboard-layout they have a hint
+
+> (Replace with ahci with a suitable module if the drive holding /boot isn’t a SATA drive supporting AHCI. Also, replace ext2 with a file system driver suitable for /boot if the file system isn’t ext2, ext3 or ext4.)
+
+and they are using `uhci ehci ahci` and since our efi mounted at `/boot/efi` is using FAT32, we should add `fat` also (according to [this so answer](https://stackoverflow.com/questions/45490299/grub-cant-recognize-fat32-filesystem-on-an-isohybrid-image/45515768#45515768)).
+
+
+I accidentilly hit the `UEFI OS` instead of the `manjaro` partition in the boot menu - and WOOOW: my machine started again!
+
+So why not simply change boot order using `efibootmgr`:
+
+
+```shell
+# Show boot order 
+efibootmgr
+
+# Change boot order 
+efibootmgr -o 0001,0000,0002
+```
+
+But this would only be the fallback bootloader, see https://unix.stackexchange.com/questions/565615/efi-boot-bootx64-efi-vs-efi-ubuntu-grubx64-efi-vs-boot-grub-x86-64-efi-gru/571173#571173
+
+
+
+
+Finally our new keymap is working as expected and it is possible to decrypt the encrypted LUKS partition.
+
+
+```shell
+sudo grub-mkstandalone -d /usr/lib/grub/x86_64-efi/ -O x86_64-efi --compress="xz" --modules="part_gpt part_msdos crypto cryptodisk luks disk diskfilter lvm" --fonts="unicode" -o "/boot/efi/EFI/Manjaro/grubx64.efi" "boot/grub/grub.cfg=/tmp/grub.cfg" "boot/grub/de.gkb=/tmp/de.gkb"
+```
+
+
+Now a strange `grub>` command prompt pops up.
+
+https://forum.manjaro.org/t/a-strange-grub-prompt-at-boot/126330
+
+
+I managed to [repair this by re-installing grub using a Linux live distro (Manjaro USB)](https://wiki.manjaro.org/index.php/GRUB/Restore_the_GRUB_Bootloader#EFI_System) and `manjaro-chroot -a`, decrypting and mounting the LUKS partitions beforehand:
+
+```shell
+# Show which partitions are available (here nvme0n1p6 and nvme0n1p4(efi partition))
+lsblk -f 
+
+# decrypt and mount LUKS encrypted partitions
+su
+cryptsetup luksOpen /dev/nvme0n1p2  nvme0n1p6_crypt 
+mount /dev/mapper/nvme0n1p2_crypt  /mnt
+mount /dev/nvme0n1p1  /mnt/boot/efi
+manjaro-chroot /mnt
+
+# Ignore cannot find a GRUB drive for /dev/sda1 errors, this is only your USB live distro
+sudo manjaro-chroot -a
+grub-probe: error: cannot find a GRUB drive for /dev/sda1.  Check your device.map.
+
+# Reinstall grub
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=manjaro --recheck 
+
+# Update grub configuration
+grub-mkconfig -o /boot/grub/grub.cfg 
+```
+
+
+```shell
+efibootmgr -c -L "Manjaro" -d /dev/nvme0n1p1 -l '\EFI\manjaro\grubx64.efi'
+```
+
+
+
+> The following **DIDN'T** work for me and rendered my system hanging in GRUB command line on bootup: `grub> ...`
+
+https://superuser.com/questions/974833/change-the-keyboard-layout-of-grub-in-stage-1
+
+Here we will create a german layout for GRUB:
+
+Change line `GRUB_TERMINAL_INPUT=console` in `/etc/default/grub` to:
+
+```shell
+# to
+GRUB_TERMINAL_INPUT=at_keyboard
+```
+
+Add the following lines to `/etc/grub.d/40_custom`:
+
+```shell
+insmod keylayouts
+keymap /boot/grub/de.gkb
+```
+
+Run the following to add a german GRUB layout
+
+```shell
+sudo grub-kbdcomp -o /tmp/de.gkb de
+```
+
+Finally we need to add the german GRUB layout to `grub-mkstandalone`. Beware to tailor the `-o "/boot/efi/EFI/Manjaro/grubx64.efi"` to your distribution (instead of `Manjaro` it might be `linux` or others):
+
+```shell
+sudo grub-mkstandalone -d /usr/lib/grub/x86_64-efi/ -O x86_64-efi --compress="xz" --modules="part_gpt part_msdos crypto cryptodisk luks disk diskfilter lvm" --fonts="unicode" -o "/boot/efi/EFI/Manjaro/grubx64.efi" "boot/grub/grub.cfg=/tmp/grub.cfg" "boot/grub/de.gkb=/tmp/de.gkb"
+```
+
+Now bootup and try to use your new GRUB key layout :)
+
+
 
 
 

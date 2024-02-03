@@ -205,7 +205,9 @@ menuentry 'Manjaro Linux' --class manjaro --class gnu-linux --class gnu --class 
 }
 ```
 
-Search for the first `menuentry 'Manjaro Linux'` entry. Copy the whole menuentry into an editor (incl. `insmod gzio`, `insmod luks` etc). They all will need to be included in the core image, otherwise the system won't be able to decrypt your LUKS partition and thus render stuck in the GRUB boot. 
+Look out for every `insmod` usage like `part_gpt`, `part_msdos`, `efi_gop` etc.
+
+Also search for the first `menuentry 'Manjaro Linux'` entry. Copy the whole menuentry into an editor (incl. `insmod gzio`, `insmod luks` etc). They all will need to be included in the core image, otherwise the system won't be able to decrypt your LUKS partition and thus render stuck in the GRUB boot. 
 
 Now we need to create a tarball `memdisk.tar` containing our keymap:
 
@@ -235,9 +237,17 @@ Change the line `keymap /de.gkb` to match your specific keymap. Also exchange th
 Finally we can generate the `core.img` listing all of the modules from our Manjaro menuentry, along with any modules used in the `early-grub.cfg`. So from the latter we need `memdisk`, `tar`, `at_keyboard`, `keylayout` and `configfile`. Let's craft the `grub-mkimage` command:
 
 ```shell
-sudo grub-mkimage -c early-grub.cfg -o "/boot/efi/EFI/Manjaro/grubx64.efi" -O x86_64-efi -m memdisk.tar diskfilter gzio part_gpt cryptodisk luks gcry_rijndael gcry_sha256 ext2 memdisk tar at_keyboard keylayouts configfile
+sudo grub-mkimage -c early-grub.cfg -o "/boot/efi/EFI/Manjaro/grubx64.efi" -O x86_64-efi -m memdisk.tar part_gpt part_msdos efi_gop efi_uga ieee1275_fb vbe vga video_bochs video_cirrus gfxterm gettext gfxmenu png crypto cryptodisk luks gcry_rijndael gcry_sha256 diskfilter gzio ext2 memdisk tar at_keyboard keylayouts configfile
 ```
 
+
+
+
+
+
+
+
+Finally our new keymap is working as expected and it is possible to decrypt the encrypted LUKS partition.
 
 
 ```shell
@@ -245,9 +255,9 @@ sudo grub-mkstandalone -d /usr/lib/grub/x86_64-efi/ -O x86_64-efi --compress="xz
 ```
 
 
+Now a strange `grub>` command prompt pops up.
 
-
-
+https://forum.manjaro.org/t/a-strange-grub-prompt-at-boot/126330
 
 
 

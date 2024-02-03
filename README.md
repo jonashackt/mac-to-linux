@@ -237,8 +237,14 @@ Change the line `keymap /de.gkb` to match your specific keymap. Also exchange th
 Finally we can generate the `core.img` listing all of the modules from our Manjaro menuentry, along with any modules used in the `early-grub.cfg`. So from the latter we need `memdisk`, `tar`, `at_keyboard`, `keylayout` and `configfile`. Let's craft the `grub-mkimage` command:
 
 ```shell
-sudo grub-mkimage -c early-grub.cfg -o "/boot/efi/EFI/Manjaro/grubx64.efi" -O x86_64-efi -m memdisk.tar part_gpt part_msdos efi_gop efi_uga ieee1275_fb vbe vga video_bochs video_cirrus gfxterm gettext gfxmenu png crypto cryptodisk luks gcry_rijndael gcry_sha256 diskfilter gzio ext2 memdisk tar at_keyboard keylayouts configfile
+sudo grub-mkimage -c early-grub.cfg -o "/boot/efi/EFI/Manjaro/grubx64.efi" -O x86_64-efi -d /usr/lib/grub/x86_64-efi/ -m memdisk.tar part_gpt part_msdos efi_gop efi_uga crypto cryptodisk luks gcry_rijndael gcry_sha256 diskfilter gzio ext2 fat memdisk tar at_keyboard usb_keyboard uhci ehci ahci keylayouts configfile
 ```
+
+Here https://cryptsetup-team.pages.debian.net/cryptsetup/encrypted-boot.html#using-a-custom-keyboard-layout they have a hint
+
+> (Replace with ahci with a suitable module if the drive holding /boot isn’t a SATA drive supporting AHCI. Also, replace ext2 with a file system driver suitable for /boot if the file system isn’t ext2, ext3 or ext4.)
+
+and they are using `uhci ehci ahci` and since our efi mounted at `/boot/efi` is using FAT32, we should add `fat` also (according to [this so answer](https://stackoverflow.com/questions/45490299/grub-cant-recognize-fat32-filesystem-on-an-isohybrid-image/45515768#45515768)).
 
 
 
@@ -258,6 +264,31 @@ sudo grub-mkstandalone -d /usr/lib/grub/x86_64-efi/ -O x86_64-efi --compress="xz
 Now a strange `grub>` command prompt pops up.
 
 https://forum.manjaro.org/t/a-strange-grub-prompt-at-boot/126330
+
+
+I managed to [repair this by re-installing grub using a Linux live distro (Manjaro USB)](https://wiki.manjaro.org/index.php/GRUB/Restore_the_GRUB_Bootloader#EFI_System) and `manjaro-chroot -a`, decrypting and mounting the LUKS partitions beforehand:
+
+```shell
+# Show which partitions are available (here nvme0n1p6 and nvme0n1p4(efi partition))
+lsblk -f 
+
+# decrypt and mount LUKS encrypted partitions
+su
+cryptsetup luksOpen /dev/nvme0n1p6  nvme0n1p6_crypt 
+mount /dev/mapper/nvme0n1p6_crypt  /mnt
+mount /dev/nvme0n1p4  /mnt/boot/efi
+manjaro-chroot /mnt
+
+# Ignore cannot find a GRUB drive for /dev/sda1 errors, this is only your USB live distro
+sudo manjaro-chroot -a
+grub-probe: error: cannot find a GRUB drive for /dev/sda1.  Check your device.map.
+
+# Reinstall grub
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=manjaro --recheck 
+
+# Update grub configuration
+grub-mkconfig -o /boot/grub/grub.cfg 
+```
 
 
 

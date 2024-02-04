@@ -208,6 +208,8 @@ It handles backups more like git repositories and doesn't hold changed files mul
 
 restic eliminates nearly all fallacies of duplicity (and thus Gnome Backup / Deja Dup). A restore is extremely fast, since there's no need to put together files from different difftars. Additionally it has no effect on the overall backup status, if single data blocks are currupt.
 
+In my experiences restict also needs far less CPU resources then duplicity/Deja Dup: And that's kind a killer criteria also, since 2 hours of backup is a lot of CPU time...
+
 * restic: https://github.com/restic/restic docs: https://restic.readthedocs.io/en/stable/010_introduction.html
 * resticprofile: https://github.com/creativeprojects/resticprofile docs: https://creativeprojects.github.io/resticprofile/index.html
 
@@ -250,6 +252,7 @@ First we want to define, which files we don't want to backup. Thus let's create 
 .local/pipx/venvs
 .ansible/test/venv
 go/pkg/mod
+node_modules
 
 # Apps
 .var/app/io.freetubeapp.FreeTube
@@ -257,6 +260,7 @@ snap/miro/3/.config/miro/Cache
 .var/app/com.github.IsmaelMartinez.teams_for_linux/config/teams-for-linux/Partitions/teams-4-linux/Cache
 
 ### Browsers
+.var/app/**/Cache*
 .var/app/com.google.Chrome/config/google-chrome/Default/Service Worker/CacheStorage
 .var/app/com.microsoft.Edge/config/microsoft-edge/Default/Service Worker/CacheStorage
 .mozilla/firefox/**/cache/
@@ -272,6 +276,8 @@ snap/miro/3/.config/miro/Cache
 #.vagrant.d
 #VirtualBox VMs
 ```
+
+You can check your filepatterns here: https://www.digitalocean.com/community/tools/glob
 
 Now create a file named `profiles.yaml` inside your new folder (you can also [use different configuration formats like toml, hcl, json](https://creativeprojects.github.io/resticprofile/configuration/getting_started/index.html)):
 
@@ -324,11 +330,58 @@ irrecoverably lost.
 Before really running the backup we can testdrive it:
 
 ```shell
-resticprofile --dry-run backup
+resticprofile backup --dry-run
 ```
 
+And finally let the backup run:
 
+```shell
+$ resticprofile backup
 
+2024/02/04 14:58:30 using configuration file: profiles.yaml
+2024/02/04 14:58:30 profile 'default': starting 'backup'
+open repository
+repository b1a22de4 opened (version 2, compression level auto)
+lock repository
+no parent snapshot found, will read all files
+load index files
+
+start scan on [/home/jonashackt]
+start backup on [/home/jonashackt]
+scan finished in 1.522s: 102434 files, 354.759 GiB
+
+Files:       102435 new,     0 changed,     0 unmodified
+Dirs:        13654 new,     0 changed,     0 unmodified
+Data Blobs:  385365 new
+Tree Blobs:  12494 new
+Added to the repository: 324.617 GiB (284.612 GiB stored)
+
+processed 102435 files, 354.759 GiB in 2:12:27
+snapshot 3122d6d5 saved
+2024/02/04 17:10:58 profile 'default': finished 'backup'
+```
+
+After the command has finished, you can have a look at the snapshots created:
+
+```shell
+$ restic -r "/run/media/jonashackt/Extreme SSD/linuxbackup" snapshots
+
+enter password for repository: 
+repository b1a22de4 opened (version 2, compression level auto)
+ID        Time                 Host        Tags        Paths
+-----------------------------------------------------------------------
+3122d6d5  2024-02-04 14:58:30  pikelinux               /home/jonashackt
+-----------------------------------------------------------------------
+1 snapshots
+```
+
+Now how does a restore work? https://restic.readthedocs.io/en/stable/050_restore.html
+
+If you want to restore it to another machine, detach your SSD and attach it to the other machine:
+
+```shell
+restic -r "/run/media/jonashackt/Extreme SSD/linuxbackup" restore latest --target /home/jonashackt
+```
 
 
 

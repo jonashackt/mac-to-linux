@@ -118,17 +118,31 @@ It's also a good idea to start with the goary details like backups right before 
 The first thing in Backups is to configure the exclusions, which files you don't want to backup - folders like `~/.cache`, `~/.vagrant`, `~/VirtualBox VMs` etc.
 
 ```shell
+
+/home/jonashackt/.cache
+/home/jonashackt/.config/Code - OSS/CachedData/
+/home/jonashackt/.config/libreoffice/4/cache/
 /home/jonashackt/.npm/
 /home/jonashackt/.pyenv/
+/home/jonashackt/.local/share/virtualenv/
 /home/jonashackt/.ansible/test/venv/
+/home/jonashackt/go/pkg/mod/
+
+/home/jonashackt/.var/app/io.freetubeapp.FreeTube/
 /home/jonashackt/.var/app/com.google.Chrome/config/google-chrome/Default/Service Worker/CacheStorage/
-/home/jonashackt/.var/app/com.github.IsmaelMartinez.teams_for_linux/config/teams-for-linux/Partitions/teams-4-linux/Cache/
 /home/jonashackt/.var/app/com.microsoft.Edge/config/microsoft-edge/Default/Service Worker/CacheStorage
+/home/jonashackt/.var/app/com.github.IsmaelMartinez.teams_for_linux/config/teams-for-linux/Partitions/teams-4-linux/Cache/
+
+/home/jonashackt/.config/Slack/Service Worker/CacheStorage/
+/home/jonashackt/.var/app/com.slack.Slack/config/Slack/Cache/
 /home/jonashackt/.var/app/com.slack.Slack/config/Slack/Service Worker/CacheStorage/
 /home/jonashackt/.config/Slack/Cache/
+
 /home/jonashackt/.kube/cache/
 /home/jonashackt/.local/pipx/venvs/
 /home/jonashackt/snap/miro/3/.config/miro/Cache
+/home/jonashackt/.vagrant.d
+/home/jonashackt/VirtualBox VMs
 ```
 
 But in Deja Dups UI one cannot configure file patterns to exclude (see https://askubuntu.com/questions/690990/can-i-ignore-files-by-pattern-in-deja-dup-backup), only full paths.
@@ -136,7 +150,7 @@ But in Deja Dups UI one cannot configure file patterns to exclude (see https://a
 Or in [`dconf-editor`](https://apps.gnome.org/DconfEditor/) (`pamac install dconf-editor`), locate org -> gnome -> deja-dup -> exclude-list and edit:
 
 ```shell
-['$TRASH', '/home/jonashackt/.vagrant.d', '/home/jonashackt/.cache', '/home/jonashackt/VirtualBox VMs', '/home/jonashackt/**/node_modules', '/home/jonashackt/.npm/', '/home/jonashackt/.pyenv/', '/home/jonashackt/.ansible/test/venv/', '/home/jonashackt/.var/app/com.google.Chrome/config/google-chrome/Default/Service Worker/CacheStorage/', '/home/jonashackt/.var/app/com.github.IsmaelMartinez.teams_for_linux/config/teams-for-linux/Partitions/teams-4-linux/Cache/', '/home/jonashackt/.var/app/com.microsoft.Edge/config/microsoft-edge/Default/Service Worker/CacheStorage', '/home/jonashackt/.var/app/com.slack.Slack/config/Slack/Service Worker/CacheStorage/', '/home/jonashackt/.config/Slack/Cache/', '/home/jonashackt/.kube/cache/', '/home/jonashackt/.local/pipx/venvs/', '/home/jonashackt/snap/miro/3/.config/miro/Cache']
+['$TRASH', '/home/jonashackt/.config/Code - OSS/CachedData/', '/home/jonashackt/.config/libreoffice/4/cache/', '/home/jonashackt/.vagrant.d', '/home/jonashackt/.cache', '/home/jonashackt/VirtualBox VMs', '/home/jonashackt/.npm/', '/home/jonashackt/.pyenv/', '/home/jonashackt/.local/share/virtualenv/', '/home/jonashackt/.ansible/test/venv/', '/home/jonashackt/go/pkg/mod/', '/home/jonashackt/.var/app/io.freetubeapp.FreeTube/', '/home/jonashackt/.var/app/com.google.Chrome/config/google-chrome/Default/Service Worker/CacheStorage/', '/home/jonashackt/.var/app/com.github.IsmaelMartinez.teams_for_linux/config/teams-for-linux/Partitions/teams-4-linux/Cache/', '/home/jonashackt/.var/app/com.microsoft.Edge/config/microsoft-edge/Default/Service Worker/CacheStorage', '/home/jonashackt/.config/Slack/Service Worker/CacheStorage/', '/home/jonashackt/.var/app/com.slack.Slack/config/Slack/Service Worker/CacheStorage/', '/home/jonashackt/.var/app/com.slack.Slack/config/Slack/Cache/', '/home/jonashackt/.config/Slack/Cache/', '/home/jonashackt/.kube/cache/', '/home/jonashackt/.local/pipx/venvs/', '/home/jonashackt/snap/miro/3/.config/miro/Cache']
 ```
 
 

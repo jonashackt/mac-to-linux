@@ -190,6 +190,8 @@ Or in [`dconf-editor`](https://apps.gnome.org/DconfEditor/) (`pamac install dcon
 ['$TRASH', '/home/jonashackt/Downloads/iso', '/home/jonashackt/.config/Code - OSS/CachedData/', '/home/jonashackt/.config/libreoffice/4/cache/', '/home/jonashackt/.vagrant.d', '/home/jonashackt/.cache', '/home/jonashackt/VirtualBox VMs', '/home/jonashackt/.npm/', '/home/jonashackt/.pyenv/', '/home/jonashackt/.local/share/virtualenv/', '/home/jonashackt/.ansible/test/venv/', '/home/jonashackt/go/pkg/mod/', '/home/jonashackt/.var/app/io.freetubeapp.FreeTube/', '/home/jonashackt/.var/app/com.google.Chrome/config/google-chrome/Default/Service Worker/CacheStorage/', '/home/jonashackt/.var/app/com.github.IsmaelMartinez.teams_for_linux/config/teams-for-linux/Partitions/teams-4-linux/Cache/', '/home/jonashackt/.var/app/com.microsoft.Edge/config/microsoft-edge/Default/Service Worker/CacheStorage', '/home/jonashackt/.config/Slack/Service Worker/CacheStorage/', '/home/jonashackt/.var/app/com.slack.Slack/config/Slack/Service Worker/CacheStorage/', '/home/jonashackt/.var/app/com.slack.Slack/config/Slack/Cache/', '/home/jonashackt/.config/Slack/Cache/', '/home/jonashackt/.kube/cache/', '/home/jonashackt/.local/pipx/venvs/', '/home/jonashackt/snap/miro/3/.config/miro/Cache']
 ```
 
+Also worth a try: https://medium.com/@shimo164/ignore-node-modules-directories-in-deja-dup-433997fd2461 But that means creating `.deja-dup-ignore` files everywhere.
+
 
 
 Ok, Deja Dup just can't finish the scanning on my system in any way - don't know why, it simply hangs.
@@ -198,6 +200,132 @@ Ok, Deja Dup just can't finish the scanning on my system in any way - don't know
 
 
 
+#### Backup with restic and resticprofile
+
+Restic might be a faster and more robust solution than other backup tools: https://www.datamate.org/linux-server-backup-mit-restic-und-duplicity/
+
+It handles backups more like git repositories and doesn't hold changed files multiple times. Every object is divided into small blocks and just occurs once in the backup. If something changes, only those differences will be transfered. Thus filechanges do not result in duplication and massively reduces the needed disk space for backups. 
+
+restic eliminates nearly all fallacies of duplicity (and thus Gnome Backup / Deja Dup). A restore is extremely fast, since there's no need to put together files from different difftars. Additionally it has no effect on the overall backup status, if single data blocks are currupt.
+
+* restic: https://github.com/restic/restic docs: https://restic.readthedocs.io/en/stable/010_introduction.html
+* resticprofile: https://github.com/creativeprojects/resticprofile docs: https://creativeprojects.github.io/resticprofile/index.html
+
+> Getting started: https://creativeprojects.github.io/resticprofile/configuration/getting_started/index.html
+
+
+```shell
+pamac install restic resticprofile-bin
+```
+
+With resticprofile we get a nice YAML config file, where we can configure restic to do our backups!
+
+> Be sure to have a YAML extension installed in your VSCode https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml
+
+
+Let's create our restic(profile) configuration. Start by creating a folder in your home directory:
+
+```shell
+mkdir /home/jonashackt/restic
+cd /home/jonashackt/restic
+```
+
+First we want to define, which files we don't want to backup. Thus let's create a `excludes.txt`:
+
+```shell
+# general
+.cache
+.config/libreoffice/4/cache
+
+# IDEs
+.config/Code/Cache
+.config/Code/CachedData
+.config/Code/logs
+.config/Code - OSS/CachedData
+
+# dev packages
+.npm
+.pyenv
+.local/share/virtualenv
+.local/pipx/venvs
+.ansible/test/venv
+go/pkg/mod
+
+# Apps
+.var/app/io.freetubeapp.FreeTube
+snap/miro/3/.config/miro/Cache
+.var/app/com.github.IsmaelMartinez.teams_for_linux/config/teams-for-linux/Partitions/teams-4-linux/Cache
+
+### Browsers
+.var/app/com.google.Chrome/config/google-chrome/Default/Service Worker/CacheStorage
+.var/app/com.microsoft.Edge/config/microsoft-edge/Default/Service Worker/CacheStorage
+.mozilla/firefox/**/cache/
+
+### Slack
+.config/Slack/Cache
+.config/Slack/Service Worker/CacheStorage
+.var/app/com.slack.Slack/config/Slack/Cache
+.var/app/com.slack.Slack/config/Slack/Service Worker/CacheStorage
+
+# VMs
+.kube/cache
+#.vagrant.d
+#VirtualBox VMs
+```
+
+Now create a file named `profiles.yaml` inside your new folder (you can also [use different configuration formats like toml, hcl, json](https://creativeprojects.github.io/resticprofile/configuration/getting_started/index.html)):
+
+```yaml
+# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+
+version: "1"
+
+default:
+   repository: "local:/run/media/jonashackt/Extreme SSD/linuxbackup"
+   password-file: "password.txt"
+
+   backup:
+      exclude-file: "excludes.txt"
+      exclude-caches: true
+      verbose: true
+      source:
+      - "/home/jonashackt"
+```
+
+The restic [repository is the place, where your backups are saved](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html)).
+
+> "The repository can be stored locally, or on some remote server or service."
+
+`default:repository` configures the repository kind and path
+
+So in my case, where I want to use a *locally* attached external SSD drive mounted at `/run/media/jonashackt/Extreme SSD/linuxbackup`, this is `"local:/run/media/jonashackt/Extreme SSD/linuxbackup"`.
+
+Also create a `password.txt`. resticprofile can do that for you, if you want:
+
+```shell
+resticprofile generate --random-key > password.txt
+```
+
+Now we need to initialize a new restic repository vis `resticprofile init`:
+
+```shell
+$ resticprofile init
+
+2024/02/04 14:15:07 using configuration file: profiles.yaml
+2024/02/04 14:15:07 profile 'default': starting 'init'
+created restic repository b1a22de480 at local:/run/media/jonashackt/Extreme SSD/linuxbackup
+
+Please note that knowledge of your password is required to access
+the repository. Losing your password means that your data is
+irrecoverably lost.
+2024/02/04 14:16:05 profile 'default': finished 'init'
+```
+
+Before really running the backup we can testdrive it:
+
+```shell
+resticprofile --dry-run backup
+```
 
 
 
@@ -1412,114 +1540,6 @@ Now bootup and try to use your new GRUB key layout :)
 
 
 
-#### Backup with restic and resticprofile
-
-* restic: https://github.com/restic/restic docs: https://restic.readthedocs.io/en/stable/010_introduction.html
-* resticprofile: https://github.com/creativeprojects/resticprofile docs: https://creativeprojects.github.io/resticprofile/index.html
-
-> Getting started: https://creativeprojects.github.io/resticprofile/configuration/getting_started/index.html
-
-
-```shell
-pamac install restic resticprofile-bin
-```
-
-With resticprofile we get a nice YAML config file, where we can configure restic to do our backups!
-
-> Be sure to have a YAML extension installed in your VSCode https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml
-
-
-Let's create our restic(profile) configuration. Start by creating a folder in your home directory:
-
-```shell
-mkdir /home/jonashackt/restic
-cd /home/jonashackt/restic
-```
-
-First we want to define, which files we don't want to backup. Thus let's create a `excludes.txt`:
-
-```shell
-# general
-.cache
-.config/libreoffice/4/cache
-
-# IDEs
-.config/Code/Cache
-.config/Code/CachedData
-.config/Code/logs
-.config/Code - OSS/CachedData
-
-# dev packages
-.npm
-.pyenv
-.local/share/virtualenv
-.local/pipx/venvs
-.ansible/test/venv
-go/pkg/mod
-
-# Apps
-.var/app/io.freetubeapp.FreeTube
-snap/miro/3/.config/miro/Cache
-.var/app/com.github.IsmaelMartinez.teams_for_linux/config/teams-for-linux/Partitions/teams-4-linux/Cache
-
-### Browsers
-.var/app/com.google.Chrome/config/google-chrome/Default/Service Worker/CacheStorage
-.var/app/com.microsoft.Edge/config/microsoft-edge/Default/Service Worker/CacheStorage
-.mozilla/firefox/**/cache/
-
-### Slack
-.config/Slack/Cache
-.config/Slack/Service Worker/CacheStorage
-.var/app/com.slack.Slack/config/Slack/Cache
-.var/app/com.slack.Slack/config/Slack/Service Worker/CacheStorage
-
-# VMs
-.kube/cache
-#.vagrant.d
-#VirtualBox VMs
-```
-
-Now create a file named `profiles.yaml` inside your new folder (you can also [use different configuration formats like toml, hcl, json](https://creativeprojects.github.io/resticprofile/configuration/getting_started/index.html)):
-
-```yaml
-# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
-
-version: "1"
-
-default:
-   repository: "local:/run/media/jonashackt/Extreme SSD"
-   password-file: "password.txt"
-
-   backup:
-      exclude-file: "excludes.txt"
-      exclude-caches: true
-      verbose: true
-      source:
-      - "/home/jonashackt"
-
-```
-
-The restic [repository is the place, where your backups are saved](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html)).
-
-> "The repository can be stored locally, or on some remote server or service."
-
-`default:repository` configures the repository kind and path
-
-So in my case, where I want to use a *locally* attached external SSD drive mounted at `/run/media/jonashackt/Extreme SSD`, this is `"local:/run/media/jonashackt/Extreme SSD"`.
-
-Also create a `password.txt`. resticprofile can do that for you, if you want:
-
-```shell
-resticprofile generate --random-key > password.txt
-```
-
-Now we need to initialize a new restic repository (the place, where your backups are saved, [are called repository in restic](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html)).
-
-> "The repository can be stored locally, or on some remote server or service."
-
-```shell
-resticprofile init
-```
 
 
 

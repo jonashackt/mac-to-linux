@@ -111,6 +111,24 @@ https://www.tuxedocomputers.com/en/Infos/Help-Support/Instructions/Change-LUKS-e
 
 
 
+# Backup
+
+It's also a good idea to start with the goary details like backups right before you use your rig productively. I had some recommendations for https://github.com/restic/restic, but wanted to give the GNOME backup called `Deja Dup` https://apps.gnome.org/DejaDup/ a chance. Since I also want to explore the merrits of Linux not only for me, but also for other users, that might not be that used to a command line.
+
+The first thing in Backups is to configure the exclusions, which files you don't want to backup - folders like `~/.cache`, `~/.vagrant`, `~/VirtualBox VMs` etc.
+
+```shell
+/home/jonashackt/.npm/_cacache
+/home/jonashackt/.pyenv/
+/home/jonashackt/.var/app/com.google.Chrome/config/google-chrome/Default/Service Worker/CacheStorage/
+/home/jonashackt/.var/app/com.github.IsmaelMartinez.teams_for_linux/config/teams-for-linux/Partitions/teams-4-linux/Cache/
+/home/jonashackt/.var/app/com.microsoft.Edge/config/microsoft-edge/Default/Service Worker/CacheStorage
+```
+
+But in Deja Dups UI one cannot configure file patterns to exclude (see https://askubuntu.com/questions/690990/can-i-ignore-files-by-pattern-in-deja-dup-backup), only full paths.
+
+
+
 
 
 
@@ -1355,6 +1373,4 @@ https://pulsesecurity.co.nz/advisories/tpm-luks-bypass
 
 # Open Topics
 
-* backup
 
-https://github.com/restic/restic

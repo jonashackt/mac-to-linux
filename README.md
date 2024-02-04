@@ -94,7 +94,7 @@ https://forum.manjaro.org/t/manjaro-with-full-disk-encryption-how-fast-how-stabl
 verdict:
 * Use Manjaro over Arch (since the installer has the encryption process baked in)
 * Use a SSD with Manjaro/Arch to have nearly no performance issues due to encryption
-* bootup will be a bit delayed (few seconds, depending on CPU speed), because GRUB doesn't use multiple processors and needs to decrypt the partition container. If you want to speed this up, you can either manually encrypt things and leave out the boot partition (long process, not recommended). Or lower the LUKS iteration cycles for the boot partion: https://unix.stackexchange.com/questions/497746/how-to-change-luks-encryption-difficulty-on-manjaro-full-disk-encrypt
+* 
 
 In the Manjaro installer, the LUKS encryption is easily setup. Simply check `Encrypt system` and set a password:
 
@@ -121,18 +121,22 @@ sudo cryptsetup luksAddKey /dev/nvme0n1p2
 
 #### Speeding up LUKS decryption in GRUB
 
+Bootup will be quite a bit delayed (few seconds, depending on CPU speed), because GRUB doesn't use multiple processors and needs to decrypt the partition container. If you want to speed this up, you can either manually encrypt things and leave out the boot partition (long process, not recommended). Or lower the LUKS iteration cycles for the boot partion: https://unix.stackexchange.com/questions/497746/how-to-change-luks-encryption-difficulty-on-manjaro-full-disk-encrypt
+
 https://wiki.archlinux.org/title/GRUB/Tips_and_tricks#Manual_configuration_of_core_image_for_early_boot
 
-If you're a bit frustrated for waiting to long at boot time, this can be due to a high cost parameters of the key derivation function, which you can check as follows: 
+If you're a bit frustrated for waiting to long at boot time, this can be due to a high cost parameters of the key derivation function. Dump all current LUKS keys first:
 
 ```shell
 cryptsetup luksDump /dev/nvme0n1p2
 ```
 
+Now choose the key slot you want to change. We need to provide it as `-S x` parameter, where `x` is your key's slot.
+
 If your password provides enough entropy to counter common attacks by itself, you can lower the parameters:
 
 ```shell
-cryptsetup luksChangeKey --pbkdf-force-iterations 1000 /dev/nvme0n1p2
+cryptsetup luksChangeKey --iter-time 1000 /dev/nvme0n1p2 -S 0
 ```
 
 

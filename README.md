@@ -119,6 +119,22 @@ sudo cryptsetup luksChangeKey /dev/nvme0n1p2
 sudo cryptsetup luksAddKey /dev/nvme0n1p2
 ```
 
+#### Speeding up LUKS decryption in GRUB
+
+https://wiki.archlinux.org/title/GRUB/Tips_and_tricks#Manual_configuration_of_core_image_for_early_boot
+
+If you're a bit frustrated for waiting to long at boot time, this can be due to a high cost parameters of the key derivation function, which you can check as follows: 
+
+```shell
+cryptsetup luksDump /dev/nvme0n1p2
+```
+
+If your password provides enough entropy to counter common attacks by itself, you can lower the parameters:
+
+```shell
+cryptsetup luksChangeKey --pbkdf-force-iterations 1000 /dev/nvme0n1p2
+```
+
 
 
 # Backup

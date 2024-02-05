@@ -139,6 +139,18 @@ If your password provides enough entropy to counter common attacks by itself, yo
 cryptsetup luksChangeKey --iter-time 1000 /dev/nvme0n1p2 -S 0
 ```
 
+If you use `luksDeleteKey` or `luksKillSlot` for whatever reason (I wanted to delete my not that high entropy password after creating a new key), there might be a nasty window popping up - only after a restart of your machine stating:
+
+> "The password you use to log in to your computer no longer matches that of your login keyring."
+
+This is due to an outdated Gnome keyring, which is no big deal but may scare you a bit (like me - since non of the current passwords work, but the old `luksKillSlot` deleted does!). Luckily [it's easy to solve](https://askubuntu.com/a/65294/451114):
+
+```shell
+rm ~/.local/share/keyrings/login.keyring
+```
+
+Then logout and re-login again. Done :)
+
 
 
 # Backup
@@ -377,11 +389,13 @@ ID        Time                 Host        Tags        Paths
 
 Now how does a restore work? https://restic.readthedocs.io/en/stable/050_restore.html
 
-If you want to restore it to another machine, detach your SSD and attach it to the other machine:
+If you want to restore it to another machine, detach your SSD and attach it to the other machine. Now head to the root `/` and run the following:
 
 ```shell
-restic -r "/run/media/jonashackt/Extreme SSD/linuxbackup" restore latest --target /home/jonashackt
+restic -r "/run/media/jonashackt/Extreme SSD/linuxbackup" restore latest --target .
 ```
+
+Don't insert the `--target` path with `/home/jonashackt` again, since that would create the restored backup in `/home/jonashackt/home/jonashackt`.
 
 
 
@@ -389,19 +403,19 @@ restic -r "/run/media/jonashackt/Extreme SSD/linuxbackup" restore latest --targe
 
 # Productivity Software on Linux
 
-## Enable flathub Repository in Manjaro package management
+## Enable AUR & flathub Repositories in Manjaro package management
 
 Simply activate in Add/Remove Programs, since it's already installed - as the docs state https://flatpak.org/setup/Manjaro
 
-> Flatpak is installed by default on Manjaro 20 or higher.
+> Flatpak & AUR/pacman are installed by default on Manjaro 20 or higher.
 
-> To enable its support, navigate to the Software Manager (Add/Remove Programs)
+> To enable their support, navigate to the Software Manager (Add/Remove Programs)
 
 > Click on the triple line menu [or dots depending on the Desktop Environment] on the right, in the drop down menu select "Preferences"
 
-> Navigate to the "Flatpak" tab and slide the toggle to Enable Flatpak support (it is also possible to enable checking for updates, which is recommended).
+> Navigate to the "AUR" and "Flatpak" tabs and slide the support toggle (it is also possible to enable checking for updates, which is recommended).
 
-Flatpack is super useful to install many Desktop applications like MS Teams, Zoom, Slack etc.
+Flatpack is super useful to install many Desktop applications like MS Teams, Zoom, Slack etc, but also has it's drawback.
 
 
 ## Spotlight like search

@@ -399,6 +399,18 @@ Don't insert the `--target` path with `/home/jonashackt` again, since that would
 
 
 
+# High Resolution Display (HiDPI) scaling
+
+https://wiki.archlinux.org/title/HiDPI
+
+As per default you only have 100% steps to scale your display. But there's an experimental feature called fractional scaling in Gnome, which you can activate:
+
+https://www.dedoimedo.com/computers/gnome-hd-scaling.html
+
+I didn't really like it, since it kind of "blurrs" the screen. My solution: In-program zoom and Font scaling:
+
+With my 2560 x 1600 I use a combination of Browser scaling (Firefox default zoom), IDE scaling (VS Code `Strg +`) and higher Font scaling factor (`1.25`) in the GNOME Tweaks menu (you can reach that via `Manjaro Hello`).
+
 
 
 # Productivity Software on Linux

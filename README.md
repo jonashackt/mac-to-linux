@@ -1655,3 +1655,62 @@ https://pulsesecurity.co.nz/advisories/tpm-luks-bypass
 # Open Topics
 
 * Restoring (migrating) iOS Photos library
+
+
+
+
+
+
+# Schenker Vision Pro 16: loudly fans
+
+https://www.reddit.com/r/XMG_gg/comments/18h093b/schenker_vision_pro_16_m23_fan_noise/
+
+There's control center under Windows, that writes fan configuration to the EC-Firmware ([Embedded Controller Firmware](https://de.wikipedia.org/wiki/Embedded_Controller)):
+
+https://www.reddit.com/r/XMG_gg/comments/qqej19/neo_15_keine_automatische_l%C3%BCftersteuerung_hilfe/
+
+There you can configure the fan profiles.
+
+BIOS Updates Schenker Vision Pro: https://download.schenker-tech.de/package/schenker-vision-14-16-16-pro-m23-svs14m23-svs16m23-svs16pm23/
+
+This seems to be the exact difference to the TUXEDO computers - see https://www.sagrland.de/2021/08/21/schenker-vision-14-tuxedo-infinitybook-pro-14-gen6-erster-eindruck/
+
+
+### Is the NVIDIA card a problem?
+
+Here's a thread where Schenker/XMG states, that if the laptop only runs for 2,5 hours on battery and is the Nvidia card is on all the time.
+
+https://www.computerbase.de/forum/threads/sammelthread-schenker-vision-16-pro-und-vision-16-die-weltweit-leichtesten-16-zoll-ultrabooks-in-ihrer-leistungsklasse.2110044/page-2
+
+There's also a paragraph in the official FAQ: https://www.xmg.gg/faq/troubleshooting/#power-consumption-guide
+
+So we should maybe try to deactivate the Nvidia card?
+
+https://www.baeldung.com/linux/nvidia-gpu-enable-disable & https://unix.stackexchange.com/questions/654075/how-can-i-disable-and-later-re-enable-one-of-my-nvidia-gpus
+
+Show your available graphic cards via `lspci -k | grep -A 2 -E '(3D|VGA)'`:
+
+```shell
+$ lspci -k | grep -A 2 -E '(3D|VGA)'
+
+00:02.0 VGA compatible controller: Intel Corporation Raptor Lake-P [Iris Xe Graphics] (rev 04)
+	DeviceName: Onboard - Video
+	Subsystem: Tongfang Hongkong Limited Raptor Lake-P [Iris Xe Graphics]
+--
+01:00.0 VGA compatible controller: NVIDIA Corporation AD107M [GeForce RTX 4060 Max-Q / Mobile] (rev a1)
+	Subsystem: Tongfang Hongkong Limited AD107M [GeForce RTX 4060 Max-Q / Mobile]
+	Kernel driver in use: nvidia
+```
+
+Now disable the NVidia card on the second slot:
+
+```shell
+$ sudo nvidia-smi --id 0000:01:00.0 --persistence-mode 0
+$ sudo nvidia-smi drain --pciid 0000:01:00.0 --modify 1
+``
+
+Activate it again:
+
+```shell
+$ sudo nvidia-smi drain --pciid 0000:01:00.0 --modify 0
+```

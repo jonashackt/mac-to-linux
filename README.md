@@ -1657,11 +1657,27 @@ https://pulsesecurity.co.nz/advisories/tpm-luks-bypass
 * Restoring (migrating) iOS Photos library
 
 
+# Hardware recommendations
+
+Finding a good enough laptop, that is suitable for Linux is really the hard part of the whole story! Especially, if you're coming from a Mac Book Pro. These are so incredibly good, that you need to dig deep into the hardware landscape.
+
+I already ordered and returned the Schenker Vision Pro 16 for various reasons (see TBD). But I really like the company! They are so incredibly open to the community, just look at their Reddit subgroup. Or the sister company Tuxedo, which crafts Linux-ready Laptops based on the Schenker hardware... wow. I'm utterly impressed!
+
+So I didn't really give up on them - and that might come to a good end: https://www.reddit.com/r/XMG_gg/comments/18wrz0c/news_xmg_roadmap_2024_new_laptops_from_xmg_and/ Because at CES a great Laptpop has been announced: the XMG Focus 15 2024. Currently unavailable, this thing is undergoing a complete makeover and I'm so exited!
 
 
 
+## AI support for running local LLMs
 
-# Schenker Vision Pro 16: loudly fans
+This is one of the best articles I know if you want to dive into hardware considerations: https://www.reddit.com/r/XMG_gg/comments/18uf17w/psa_local_ai_acceleration_in_xmg_schenker_laptops/
+
+Up until I found it I really thought, my whole Mac-to-Linux project might fail since LLMs just only run great on a Mac with it's unified architecture.
+
+But... :)
+
+
+
+## Schenker Vision Pro 16: loudly fans
 
 https://www.reddit.com/r/XMG_gg/comments/18h093b/schenker_vision_pro_16_m23_fan_noise/
 
@@ -1675,6 +1691,13 @@ BIOS Updates Schenker Vision Pro: https://download.schenker-tech.de/package/sche
 
 This seems to be the exact difference to the TUXEDO computers - see https://www.sagrland.de/2021/08/21/schenker-vision-14-tuxedo-infinitybook-pro-14-gen6-erster-eindruck/
 
+### Is the CPU the problem
+
+Graphical UIs for CPU temperature monitoring are hard to find for Linux interestingly. I used the old psensor, installed via `pamac install psensor`:
+
+https://www.tecmint.com/psensor-monitors-hardware-temperature-in-linux/
+
+
 
 ### Is the NVIDIA card a problem?
 
@@ -1682,7 +1705,9 @@ Here's a thread where Schenker/XMG states, that if the laptop only runs for 2,5 
 
 https://www.computerbase.de/forum/threads/sammelthread-schenker-vision-16-pro-und-vision-16-die-weltweit-leichtesten-16-zoll-ultrabooks-in-ihrer-leistungsklasse.2110044/page-2
 
-There's also a paragraph in the official FAQ: https://www.xmg.gg/faq/troubleshooting/#power-consumption-guide
+There's also a paragraph & GUIDE in the official FAQ:
+
+https://www.xmg.gg/faq/troubleshooting/#power-consumption-guide
 
 So we should maybe try to deactivate the Nvidia card?
 
@@ -1714,3 +1739,8 @@ Activate it again:
 ```shell
 $ sudo nvidia-smi drain --pciid 0000:01:00.0 --modify 0
 ```
+
+
+### Difference Schenker TUXEDO
+
+https://www.computerbase.de/forum/threads/sammelthread-schenker-vision-16-pro-und-vision-16-die-weltweit-leichtesten-16-zoll-ultrabooks-in-ihrer-leistungsklasse.2110044/post-28242726

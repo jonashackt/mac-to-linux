@@ -1620,43 +1620,6 @@ Now bootup and try to use your new GRUB key layout :)
 
 
 
-
-
-
-
-
-# Links
-
-https://www.makeuseof.com/how-to-install-and-remove-packages-arch-linux/
-
-Optional dependencies in Manjaro's pamac: 
-
-https://forum.manjaro.org/t/pamac-how-to-install-all-optional-dependencies/59041/3
-
-https://www.reddit.com/r/archlinux/comments/1z9y3l/install_optional_dependencies/
-
-
-https://wiki.archlinux.org/title/docker
-
-https://dev.to/kenji_goh/got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socket-3dne
-
-https://www.digitalocean.com/community/questions/how-to-fix-docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socket
-
-https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
-
-
-
-### Encryption
-
-https://pulsesecurity.co.nz/advisories/tpm-luks-bypass
-
-
-
-# Open Topics
-
-* Restoring (migrating) iOS Photos library
-
-
 # Hardware recommendations
 
 Finding a good enough laptop, that is suitable for Linux is really the hard part of the whole story! Especially, if you're coming from a Mac Book Pro. These are so incredibly good, that you need to dig deep into the hardware landscape.
@@ -1664,6 +1627,11 @@ Finding a good enough laptop, that is suitable for Linux is really the hard part
 I already ordered and returned the Schenker Vision Pro 16 for various reasons (see TBD). But I really like the company! They are so incredibly open to the community, just look at their Reddit subgroup. Or the sister company Tuxedo, which crafts Linux-ready Laptops based on the Schenker hardware... wow. I'm utterly impressed!
 
 So I didn't really give up on them - and that might come to a good end: https://www.reddit.com/r/XMG_gg/comments/18wrz0c/news_xmg_roadmap_2024_new_laptops_from_xmg_and/ Because at CES a great Laptpop has been announced: the XMG Focus 15 2024. Currently unavailable, this thing is undergoing a complete makeover and I'm so exited!
+
+
+## Disable the NVidia dGPU for longer battery life
+
+There are multiple options like PRIME etc. But what I heard the best about is envycontrol: https://github.com/bayasdev/envycontrol
 
 
 
@@ -1757,3 +1725,38 @@ $ sudo nvidia-smi drain --pciid 0000:01:00.0 --modify 0
 ### Difference Schenker TUXEDO
 
 https://www.computerbase.de/forum/threads/sammelthread-schenker-vision-16-pro-und-vision-16-die-weltweit-leichtesten-16-zoll-ultrabooks-in-ihrer-leistungsklasse.2110044/post-28242726
+
+
+
+
+
+
+
+# Links
+
+https://www.makeuseof.com/how-to-install-and-remove-packages-arch-linux/
+
+Optional dependencies in Manjaro's pamac: 
+
+https://forum.manjaro.org/t/pamac-how-to-install-all-optional-dependencies/59041/3
+
+https://www.reddit.com/r/archlinux/comments/1z9y3l/install_optional_dependencies/
+
+
+https://wiki.archlinux.org/title/docker
+
+https://dev.to/kenji_goh/got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socket-3dne
+
+https://www.digitalocean.com/community/questions/how-to-fix-docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socket
+
+https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
+
+
+
+
+
+# Open Topics
+
+* Restoring (migrating) iOS Photos library
+
+

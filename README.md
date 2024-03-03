@@ -1426,6 +1426,9 @@ Now finally use `sshfs` to mount for example the MacOS `User` dir to your Linux 
 sshfs user@localhost:/Users/jonashecht/ -p 50922 ~/osxfileshare
 ```
 
+Double click onto `~/osxfileshare` inside the home dir of the Linux host and the MacOS home dir should be accessible via the GNOME filemanager:
+
+![](osxfileshare-mounted-in-gnome.png)
 
 
 

@@ -1373,6 +1373,62 @@ sudo mdutil -i off -a
 ```
 
 
+## Filesharing with the Dockerized MacOS
+
+In the docs https://github.com/sickcodes/Docker-OSX?tab=readme-ov-file#share-directories-sharing-files-shared-folder-mount-folder there's a solution described for sharing files using `sshfs`. Before using it, we need to have a working ssh connection to the Dockerized MacOS VM.
+
+
+Add `-e "USERNAME=xyz"` and `-e "PASSWORD=a"` to the `docker run` command like this:
+
+We also need to use the `naked-auto` image instead of `naked`, since only with this we have `-e USERNAME & -e PASSWORD` support https://github.com/sickcodes/Docker-OSX?tab=readme-ov-file#technical-details
+
+```
+docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v "${PWD}/mac_hdd_ventura.img:/image" \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    -e "USERNAME=user" \
+    -e "PASSWORD=alpine" \
+    -e GENERATE_UNIQUE=true \
+    -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
+    sickcodes/docker-osx:naked-auto
+```
+
+
+Inside the started Dockerized MacOS we need to enable SSH in network sharing! Therefore head over to Apple menu  > System Settings, click General in the sidebar, then click Sharing on the right. Now turn on Remote Login https://support.apple.com/lt-lt/guide/mac-help/mchlp1066/mac
+
+Now we should be ready to go with SSH. Our Linux host console should ask to add the host permanently to known hosts. Give it a `yes`:
+
+```shell
+Warning: Permanently added '[127.0.0.1]:10022' (ED25519) to the list of known hosts.
+Host 127.0.0.1
+    User user
+    Port 10022
+    IdentityFile ~/.ssh/id_docker_osx
+    StrictHostKeyChecking no
+    UserKnownHostsFile=/dev/null
+Warning: Permanently added '[127.0.0.1]:10022' (ED25519) to the list of known hosts.
+Last login: Sun Mar  3 19:05:09 2024
+user@Jonass-iMac-Pro ~ %
+```
+
+Now install `sshfs` via pamac:
+
+```shell
+pamac install sshfs
+```
+
+Now finally use `sshfs` to mount for example the MacOS `User` dir to your Linux host:
+
+```shell
+sshfs user@localhost:/Users/jonashecht/ -p 50922 ~/osxfileshare
+```
+
+
+
+
 
 # Other
 

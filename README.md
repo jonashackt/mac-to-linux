@@ -39,7 +39,6 @@ https://wiki.manjaro.org/index.php?title=Main_Page
 
 
 
-
 # Install Manjaro Linux
 
 Mostly nowadays that should be the UEFI guide that's interesting for you https://wiki.manjaro.org/index.php/UEFI_-_Install_Guide
@@ -47,6 +46,10 @@ Mostly nowadays that should be the UEFI guide that's interesting for you https:/
 Download the matching ISO here https://manjaro.org/download/
 
 Format the `.iso` file into a USB stick. If you're on a Mac e.g. use https://etcher.balena.io.
+
+If you're on Linux or Windows have a look at https://wiki.manjaro.org/index.php/Burn_an_ISO_File#Writing_to_a_USB_Stick_in_Linux
+
+There's also an easy to use gui tool from Suse: https://github.com/openSUSE/imagewriter
 
 If you already have a Linux with Gnome running, you can use the `Disks` utility: Start `Disks`, select your USB stick, click on the two gears icons and select `Restore Partition Image`. Now find your downloaded e.g. `manjaro-gnome-23.1.3-240113-linux66.iso` from your file system and hit `Restore Image`:
 
@@ -78,7 +81,27 @@ https://wiki.archlinux.org/title/Data-at-rest_encryption
 https://wiki.archlinux.org/title/Self-encrypting_drives
 
 
-As I also read about security concerns about TPMs and 
+#### Prepare Thinkpad Fingerprint Reader
+
+Thinkpad with Fingerprint reader and OPAL protection: It is possible to enable a BIOS supervisor and nvme password, that you will be able to additionally secure with your fingerprints.
+
+https://www.reddit.com/r/thinkpad/comments/a212wx/comment/eaui7eb/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+
+> The drive is always encrypted by default. But there is no password, and as such the data is available to everyone that has physical access to the drive. Once a password is set in the bios (hd password) you will need to type it every time you do a clean boot (not at restart). You cannot access the data now unless the password is used. Even if you take the drive to another computer unless you have the password you cannot access the data. [...] I find it quite convenient, all you need is a swipe of your finger at boot. 
+
+To register your fingerprints, you sadly need to have a Windows install before the Linux installation in order to be able to use your fingerprint to unlock you device:
+
+> Because the password is required before the OS boots it is completely OS independent. Saves any configuration required to boot from encrypted drives in Linux etc. And yes you get fingerprint to unlock it. Just remember fingerprint registration requires windows so before you format and install linux, use windows to register your fingerprints, the format. 
+
+https://pcsupport.lenovo.com/us/en/products/laptops-and-netbooks/thinkbook-series/thinkbook-14-iml/videos/nvid500012-setting-up-fingerprint-reader-on-your-lenovo-pc
+
+If you installed Windows, then you can configure the fingerprints simply in the Windows security settings - and they will be written to the UEFI and will now be available to unlock your SSD. Cool eh!
+
+
+
+https://blog.rubenwardy.com/2022/11/16/thinkpad-x1-fingerprint-auth/
+
+
 
 
 ### Encryt whole file system with LUKS
@@ -151,6 +174,47 @@ rm ~/.local/share/keyrings/login.keyring
 
 Then logout and re-login again. Done :)
 
+
+
+# Manjaro Package Management: Enable AUR & flathub Repositories in Manjaro package management
+
+Simply activate in Add/Remove Programs, since it's already installed - as the docs state https://flatpak.org/setup/Manjaro
+
+> Flatpak & AUR/pacman are installed by default on Manjaro 20 or higher.
+
+> To enable their support, navigate to the Software Manager (Add/Remove Programs)
+
+> Click on the triple line menu [or dots depending on the Desktop Environment] on the right, in the drop down menu select "Preferences"
+
+> Navigate to the "AUR" and "Flatpak" tabs and slide the support toggle (it is also possible to enable checking for updates, which is recommended).
+
+Flatpack is super useful to install many Desktop applications like MS Teams, Zoom, Slack etc, but also has it's drawback.
+
+
+# Backup Manjaro package list and reinstall on other machine
+
+List packages explicitely installed: https://forum.manjaro.org/t/how-to-list-explicitly-installed-packages-using-pamac/56172/13 using `list -e` and also `-q` to omit everything except the package names:
+
+```shell
+pamac list -e -q
+```
+
+Now pipe that into a file like this:
+
+```shell
+pamac list -e -q > ~/pkglist.txt
+```
+
+> But be aware of other OS or hardware dependant packages that are contained in this list also. It is a good idea to go over it and delete packages that are not wanted to be explicitely installed by yourself (e.g. starting with `manjaro` or `gnome` or `mesa` & `amd`, if you have a nvidia card running)
+
+
+Finally feed package list to pamac on other machine: https://forum.manjaro.org/t/installing-packages-from-saved-lists/125072:
+
+```shell
+pamac install $(cat ~/pkglist.txt)
+```
+
+If you're interested, here's my [`pkglist.txt`](pkglist.txt)
 
 
 # Backup
@@ -414,21 +478,6 @@ With my 2560 x 1600 I use a combination of Browser scaling (Firefox default zoom
 
 
 # Productivity Software on Linux
-
-## Enable AUR & flathub Repositories in Manjaro package management
-
-Simply activate in Add/Remove Programs, since it's already installed - as the docs state https://flatpak.org/setup/Manjaro
-
-> Flatpak & AUR/pacman are installed by default on Manjaro 20 or higher.
-
-> To enable their support, navigate to the Software Manager (Add/Remove Programs)
-
-> Click on the triple line menu [or dots depending on the Desktop Environment] on the right, in the drop down menu select "Preferences"
-
-> Navigate to the "AUR" and "Flatpak" tabs and slide the support toggle (it is also possible to enable checking for updates, which is recommended).
-
-Flatpack is super useful to install many Desktop applications like MS Teams, Zoom, Slack etc, but also has it's drawback.
-
 
 ## Spotlight like search
 
@@ -1048,6 +1097,12 @@ But luckily we can simply use the power of the [Arch User Repository (AUR)](http
 ```
 pamac install docker
 systemctl start docker.service
+```
+
+To permantently start the docker service on every restart, run the following:
+
+```shell
+sudo systemctl enable myservice
 ```
 
 That should be everything to fire up our first Docker container on Linux:
@@ -1688,9 +1743,92 @@ I already ordered and returned the Schenker Vision Pro 16 for various reasons (s
 So I didn't really give up on them - and that might come to a good end: https://www.reddit.com/r/XMG_gg/comments/18wrz0c/news_xmg_roadmap_2024_new_laptops_from_xmg_and/ Because at CES a great Laptpop has been announced: the XMG Focus 15 2024. Currently unavailable, this thing is undergoing a complete makeover and I'm so exited!
 
 
+## Install AMD graphicscard driver
+
+No need to do anything here, since the Mesa drivers are already installed - they are developed as OpenSource drivers by AMD and should work OOTB.
+
+
+## Install NVidia driver
+
+https://wiki.manjaro.org/index.php/Configure_Graphics_Cards
+
+For me the command `foo` didn't work as expected:
+
+```shell
+sudo mhwd -a pci nonfree 0300
+> Using config 'video-nvidia' for device: 0000:2d:00.0 (0300:10de:2504) Display controller nVidia Corporation GA106 [GeForce RTX 3060 Lite Hash Rate]
+> Installing video-nvidia...
+Sourcing /etc/mhwd-x86_64.conf
+Has lib32 support: true
+Sourcing /var/lib/mhwd/db/pci/graphic_drivers/nvidia/MHWDCONFIG
+Processing classid: 0300
+Sourcing /var/lib/mhwd/scripts/include/0300
+Processing classid: 0302
+:: Synchronizing package databases...
+ core downloading...
+ extra downloading...
+ multilib downloading...
+error: target not found: linux65-nvidia
+Error: pacman failed!
+Error: script failed!
+```
+
+So I used the package manager to install the matching nvidia driver for my kernel version.
+
+List your kernel version using `mhwd-kernel -li`:
+
+```shell
+Currently running: 6.6.19-1-MANJARO (linux66)
+The following kernels are installed in your system:
+   * linux65
+   * linux66
+```
+
+Now install the `linux66-nvidia` package using pamac. Also `nvidia-settings` comes in handy as a GUI for your Nvidia card's settings, temperature etc.
+
+
+
 ## Disable the NVidia dGPU for longer battery life
 
 There are multiple options like PRIME etc. But what I heard the best about is envycontrol: https://github.com/bayasdev/envycontrol
+
+Install envycontrol via AUR and then run:
+
+```shell
+sudo envycontrol -s integrated
+```
+
+You need to reboot afterwards.
+
+There are a multitude of options available: https://github.com/bayasdev/envycontrol?tab=readme-ov-file#some-examples
+
+If you want to revert anything envycontrol configured, run:
+
+```shell
+sudo envycontrol --reset
+```
+
+BUT the best: envycontrol works together with the GNOME profile selector https://github.com/LorenzoMorelli/GPU_profile_selector and we get a cool GUI switcher integrated into the GNOME settings bar.
+
+For this to work, you need to install the extension (when not already selected as a optional dependency of envycontrol):
+
+```shell
+pamac install gnome-shell-extension-gpu-profile-selector
+```
+
+Finally we also need to activate the extension. According to https://itsfoss.com/gnome-shell-extensions/ there are two ways: [Use the website](https://extensions.gnome.org/extension/5009/gpu-profile-selector/) or use the GNOME Extensions Manager App (which is installed on Manjaro by default):
+
+```shell
+pamac install extension-manager
+```
+
+Now fire up the GNOME Extension Manager, search for `gpu-profile-selector` and install it:
+
+![](gnome-extension-manager.png)
+
+With this your first `User-Installed Extension` should show up activated in the Extension Manager. Also bar now has the a new entry!!
+
+![](gpu-profile-selector.png)
 
 
 
@@ -1785,6 +1923,13 @@ $ sudo nvidia-smi drain --pciid 0000:01:00.0 --modify 0
 
 https://www.computerbase.de/forum/threads/sammelthread-schenker-vision-16-pro-und-vision-16-die-weltweit-leichtesten-16-zoll-ultrabooks-in-ihrer-leistungsklasse.2110044/post-28242726
 
+
+
+# Fingerprint Readers
+
+## Thinkpads
+
+Theres a thorough guide here: https://wiki.archlinux.org/title/fprint
 
 
 

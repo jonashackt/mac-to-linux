@@ -782,6 +782,7 @@ https://github.com/romkatv/powerlevel10k
 
 * Night mode: https://www.reddit.com/r/ManjaroLinux/comments/ogf1iy/turn_on_night_mode/
 
+* Show Hidden `.` files in home dir: `Strg - H`
 
 
 ## Print multiple jpgs to PDF
@@ -1742,6 +1743,20 @@ I already ordered and returned the Schenker Vision Pro 16 for various reasons (s
 
 So I didn't really give up on them - and that might come to a good end: https://www.reddit.com/r/XMG_gg/comments/18wrz0c/news_xmg_roadmap_2024_new_laptops_from_xmg_and/ Because at CES a great Laptpop has been announced: the XMG Focus 15 2024. Currently unavailable, this thing is undergoing a complete makeover and I'm so exited!
 
+## Look for your Notebook model on the Arch forums
+
+Since I currently run a Lenovo Thinkpad P1 Gen 6, I searched for it - and there are lots of suggestions:
+
+https://wiki.archlinux.org/title/Lenovo_ThinkPad_P1
+
+Especially for the graphics, there is a crucial point:
+
+> There are two difficulties with configuring graphics on ThinkPad P1: there is no "integrated graphics only" option in the BIOS, and the external display ports (HDMI, etc.) are wired into the NVIDIA chip.
+
+I already encountered that I can't use my HDMI or Thunderbold 4 ports for display outputs, when on integrated only mode.
+
+Maybe we can change that using Reverse PRIME? https://wiki.archlinux.org/title/PRIME#Reverse_PRIME
+
 
 ## Install AMD graphicscard driver
 
@@ -1789,6 +1804,8 @@ Now install the `linux66-nvidia` package using pamac. Also `nvidia-settings` com
 
 
 ## Disable the NVidia dGPU for longer battery life
+
+https://forum.manjaro.org/t/more-tools-for-optimus-laptops-are-now-available/148609 (https://gitlab.com/asus-linux/supergfxctl)
 
 There are multiple options like PRIME etc. But what I heard the best about is envycontrol: https://github.com/bayasdev/envycontrol
 
@@ -1931,9 +1948,15 @@ https://www.computerbase.de/forum/threads/sammelthread-schenker-vision-16-pro-un
 
 Theres a thorough guide here: https://wiki.archlinux.org/title/fprint
 
+In my case with the Thinkpad P1 Gen 6 running Manjaro with GNOME, everything went super easy. I just stumbled upon the setting for fingerprints in the normal system settings at `Settings/Users`:
 
+![](settings-users.png)
 
+There's an option `Fingerprint Login`, where you can register all of your fingers (you have to choose the precise finger in the dropdown):
 
+![](gnome-fingerprint-registration.png)
+
+Now you should be able to login to your desktop using your finger! Really nice :) 
 
 
 # Links

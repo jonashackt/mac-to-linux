@@ -1758,6 +1758,11 @@ I already encountered that I can't use my HDMI or Thunderbold 4 ports for displa
 Maybe we can change that using Reverse PRIME? https://wiki.archlinux.org/title/PRIME#Reverse_PRIME
 
 
+## Search for experiences with your Model under Linux
+
+https://kofler.info/erfahrungsbericht-lenovo-thinkpad-p1-unter-linux/
+
+
 ## Install AMD graphicscard driver
 
 No need to do anything here, since the Mesa drivers are already installed - they are developed as OpenSource drivers by AMD and should work OOTB.
@@ -1803,7 +1808,7 @@ Now install the `linux66-nvidia` package using pamac. Also `nvidia-settings` com
 
 
 
-## Disable the NVidia dGPU for longer battery life
+## Disable the NVidia dGPU for longer battery life: envycontrol
 
 https://forum.manjaro.org/t/more-tools-for-optimus-laptops-are-now-available/148609 (https://gitlab.com/asus-linux/supergfxctl)
 
@@ -1819,11 +1824,22 @@ You need to reboot afterwards.
 
 There are a multitude of options available: https://github.com/bayasdev/envycontrol?tab=readme-ov-file#some-examples
 
+Especially, there are options like:
+
+* `--coolbits XY`: Coolbits support for GPU overclocking (not relevant for me :) )
+* `--rtd3`: PCI-Express Runtime D3 (RTD3) Power Management support for Turing and later
+* `--force-comp` (force composition pipeline): which can be used to prevent tearing on external screens https://github.com/Askannz/nvidia-force-comp-pipeline
+
+> For more info check out the envycontrol FAQ https://github.com/bayasdev/envycontrol/wiki/Frequently-Asked-Questions
+
 If you want to revert anything envycontrol configured, run:
 
 ```shell
 sudo envycontrol --reset
 ```
+
+
+### Switch graphics mode in settings UI: Combine envycontrol with GNOME extension
 
 BUT the best: envycontrol works together with the GNOME profile selector https://github.com/LorenzoMorelli/GPU_profile_selector and we get a cool GUI switcher integrated into the GNOME settings bar.
 
@@ -1846,6 +1862,247 @@ Now fire up the GNOME Extension Manager, search for `gpu-profile-selector` and i
 With this your first `User-Installed Extension` should show up activated in the Extension Manager. Also bar now has the a new entry!!
 
 ![](gpu-profile-selector.png)
+
+
+
+## Use more efficient energy profiles
+
+If you bought one of the following laptops, you have great chances to be able to configure your fans in detail (sometimes including fan curves):
+
+* Lenovo Legion (https://github.com/johnfanv2/LenovoLegionLinux)
+* Tuxedo (NOT Schenker! These do have a different Firmware in their Embedded Controller (EC), which differentiates them from Tuxedo Laptops although hardware equivalent https://github.com/tuxedocomputers/tuxedo-control-center)
+* Asus Notebook (https://asus-linux.org/)
+* Slimbook (https://github.com/Slimbook-Team/slimbookbattery & https://github.com/Slimbook-Team/slimbookintelcontroller)
+
+The cool thing about the latter is, that you can use both fully on other Laptops. Like for me I didn't found anything like these tools for Lenovo Thinkpads (only Vantage for Windows), although [they are fully certified for Linux since 2020](https://news.lenovo.com/pressroom/press-releases/lenovo-brings-linux-certification-to-thinkpad-and-thinkstation-workstation-portfolio-easing-deployment-for-developers-data-scientists/).
+
+
+## Getting your laptop silent: Fancontrol
+
+There are a multitude of options to change your fan control speeds, if your laptop goes crazy: https://wiki.archlinux.org/title/fan_speed_control
+
+https://www.baeldung.com/linux/control-fan-speed
+
+https://www.libe.net/lueftersteuerung-debian
+
+### Thinkpads: thinkfan
+
+https://wiki.archlinux.org/title/fan_speed_control#ThinkPad_laptops
+
+There is a special tool for Thinkpads: https://github.com/vmatare/thinkfan 
+
+And there's also a UI tool: https://github.com/zocker-160/thinkfan-ui (not dependand on thinkfan package):
+
+![](thinkfan-ui.png)
+
+But sadly the problem for me persists with thinkfan-ui, since the minimal fan speed is 1, which means around 2320 rpms. This is quite loud! I wanted something to tweak my minimal fan speed to maybe 1000rpm - which should be barely hearable, but prevents the CPU and GPU in idle from beeing overheated better than the current mode: either 2300rpm or off (which is quite annoying).
+
+```shell
+# Install thinkfan
+pamac install thinkfan 
+
+# Now, load the module
+modprobe thinkpad_acpi
+
+# Show config
+cat /proc/acpi/ibm/fan
+status:		enabled
+speed:		2341
+level:		auto
+commands:	level <level> (<level> is 0-7, auto, disengaged, full-speed)
+commands:	enable, disable
+commands:	watchdog <timeout> (<timeout> is 0 (off), 1-120 (seconds))
+```
+
+#### Temperatur sensors
+
+In order to configure thinkfan, use this file as the starting point: `/usr/share/doc/thinkfan/examples/thinkfan.yaml`
+
+> To configure the temperature thresholds, you will need to copy the example configuration file (/usr/share/doc/thinkfan/examples/thinkfan.yaml) to /etc/thinkfan.conf, and modify to taste. **This file specifies which sensors to read, and which interface to use to control the fan.**
+
+I found this gist of great help: https://gist.github.com/abn/de81ba413f860b00c2db3ee4aa83e035
+
+To specify your system's sensors for thinkfan, run `find /sys/devices -type f -name 'temp*_input'`.
+
+On my Thinkpad P1 Gen 6 I have the following sensors:
+
+```shell
+$ find /sys/devices -type f -name 'temp*_input'
+/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp6_input
+/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp3_input
+/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp7_input
+/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp4_input
+/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp8_input
+/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp1_input
+/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp5_input
+/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp2_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp26_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp6_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp33_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp27_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp10_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp30_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp14_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp18_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp28_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp31_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp29_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp22_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp32_input
+/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp2_input
+/sys/devices/pci0000:00/0000:00:06.0/0000:06:00.0/nvme/nvme0/hwmon3/temp1_input
+/sys/devices/pci0000:00/0000:00:06.0/0000:06:00.0/nvme/nvme0/hwmon3/temp2_input
+/sys/devices/virtual/thermal/thermal_zone0/hwmon1/temp1_input
+/sys/devices/virtual/thermal/thermal_zone9/hwmon5/temp1_input
+```
+
+To prepare the sensors for our `thinkfan.conf`, we should prefix all of them with `- hmon: `. There for run:
+
+```shell
+$ find /sys/devices -type f -name 'temp*_input' | xargs -I {} echo "- hwmon: {}" >> ~/thinkfan.conf 
+
+# the output should look somehow like this:
+cat thinkfan.conf
+- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp6_input
+- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp3_input
+- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp7_input
+- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp4_input
+- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp1_input
+- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp5_input
+- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp2_input
+- hwmon: /sys/devices/pci0000:00/0000:00:06.0/0000:06:00.0/nvme/nvme0/hwmon3/temp1_input
+- hwmon: /sys/devices/pci0000:00/0000:00:06.0/0000:06:00.0/nvme/nvme0/hwmon3/temp2_input
+```
+
+Leave out all the `/sys/devices/platform/coretemp.0/hwmon/hwmon4` & `/sys/devices/virtual/thermal/thermal_zone0/hwmon1/` lines - they gave an error like `ERROR: /sys/devices/virtual/thermal/thermal_zone9/hwmon5/temp1_input: No such file or directory`.
+
+Only for the proprietary Nvidia driver: Also run `lspci | grep NVIDIA` to find the PCI bus id of your graphics card. We should configure it via:
+
+```shell
+  # nvml: The proprietary nVidia driver
+  # ===================================
+  # Temperatures can be read directly from nVidia GPUs that run with the
+  # proprietary driver. The "nvml:" entry must specify the PCI bus ID of the
+  # GPU (can be found with lspci)
+  #
+  # Note that this does not work with the open-source "nouveau" driver. Open
+  # source drivers should support the hwmon interface instead (see above).
+  - nvml: 01:00.0
+```
+
+For me, these are 10 sensors. We need to keep that in mind for the last configuration step.
+
+
+#### Fans configuration
+
+My problem was, that the often mentioned `- tpacpi: /proc/acpi/ibm/fan` doesn't work for the more advanced configuration, where we want to change the fan speed from `0 - 255`:
+
+```shell
+sudo thinkfan -n
+ERROR: /etc/thinkfan.conf:
+Your highest fan level is 255, but fan levels greater than 7 are not supported by thinkpad_acpi
+```
+
+But there's help. First let's see an overview of our laptop's PWM sensors via `pwmconfig list`:
+
+```shell
+$ sudo pwmconfig list
+
+# pwmconfig version 3.6.0+git
+This program will search your sensors for pulse width modulation (pwm)
+controls, and test each one to see if it controls a fan on
+your motherboard. Note that many motherboards do not have pwm
+circuitry installed, even if your sensor chip supports pwm.
+
+We will attempt to briefly stop each fan using the pwm controls.
+The program will attempt to restore each fan to full speed
+after testing. However, it is ** very important ** that you
+physically verify that the fans have been to full speed
+after the program has completed.
+
+Found the following devices:
+   hwmon0 is AC
+   hwmon1 is acpitz
+   hwmon2 is BAT0
+   hwmon3 is nvme
+   hwmon4 is iwlwifi_1
+   hwmon5 is coretemp
+   hwmon6 is thinkpad
+   hwmon7 is ucsi_source_psy_USBC000:001
+   hwmon8 is ucsi_source_psy_USBC000:002
+
+Found the following PWM controls:
+   hwmon6/pwm1           current value: 255
+hwmon6/pwm1 is currently setup for automatic speed control.
+```
+
+The crucial lines here are: `Found the following PWM controls: hwmon6/pwm1           current value: 255`. From this we can derive the full path to the `pwm1` file needed: `/sys/class/hwmon/hwmon6/pwm1`.
+
+Now we need to configure this PWM device as the `fans` section in `thinkfan.conf`:
+
+```yaml
+fans:
+  # hwmon: Full path to a PWM file
+  # ==============================
+  # Also subject to the potential problem with driver load order (see above)
+   - hwmon: /sys/class/hwmon/hwmon6/pwm1
+```
+
+
+#### Finally: Reducing the rpms in the first level
+
+Remember that we have 10 sensors? Well we therefore need 10 temperature entries (altough we only want to configure the speed levels more granularly):
+
+```yaml
+levels:
+  - speed: 0
+    upper_limit: [50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
+
+  - speed: 30
+    lower_limit: [50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
+    upper_limit: [56, 56, 56, 56, 56, 56, 56, 56, 56, 56]
+
+  - speed: 70
+    lower_limit: [56, 56, 56, 56, 56, 56, 56, 56, 56, 56]
+    upper_limit: [65, 65, 65, 65, 65, 65, 65, 65, 65, 65]
+
+  - speed: 160
+    lower_limit: [65, 65, 65, 65, 65, 65, 65, 65, 65, 65]
+    upper_limit: [75, 75, 75, 75, 75, 75, 75, 75, 75, 75]
+
+  - speed: 255
+    lower_limit: [75, 75, 75, 75, 75, 75, 75, 75, 75, 75]
+```
+
+
+#### Testdrive thinkfan 
+
+Copy the configuration you just crafted to:
+
+```shell
+sudo cp ~/thinkfan.yaml /etc/thinkfan.conf
+```
+
+And testdrive thinkfan:
+
+```shell
+thinkfan -n
+```
+
+If you get an error like this, remove the sensor from your `thinkfan.conf` and start again (you also need to adjust your sensor counts):
+
+```shell
+sudo thinkfan -n                                                                                                                                                                                          ✔ 
+ERROR: Lost sensor read_temps_: Failed to read temperature(s) from /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp8_input: No such device or address
+```
+
+If everything runs fine, you can watch thinkfan at work:
+
+![](thinkfan-in-action.png)
+
+
+
 
 
 

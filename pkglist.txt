@@ -1,5 +1,6 @@
 act
 argocd
+auto-cpufreq
 autoconf
 automake
 aws-cli
@@ -12,10 +13,14 @@ bzip2
 caffeine-ng
 canon-pixma-mx870-complete
 cerebro-bin
+chromium
 deja-dup
 docker
 drawing
 dropbox
+envycontrol
+gnome-shell-extension-gpu-profile-selector
+extension-manager
 firefox
 geary
 gedit
@@ -34,6 +39,7 @@ libreoffice-fresh
 libreoffice-fresh-de
 libvirt
 linphone-desktop-appimage
+lm_sensors
 make
 nvidia-settings
 nvidia-utils
@@ -41,6 +47,7 @@ pack-cli-bin
 packer
 perl
 postman-bin
+powertop
 pulumi
 pyenv
 python-pip
@@ -52,6 +59,7 @@ slack-desktop
 slimbookbattery
 steam
 teamviewer
+thinkfan-ui
 timeshift
 timeshift-autosnap-manjaro
 tree

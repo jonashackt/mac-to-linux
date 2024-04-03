@@ -721,8 +721,22 @@ Other strategies to get to your documents using Linux:
 
 If you only want to get single documents and download them to your desktop, there's a simple web interface you can enable inside your Remarkable tablet's settings. Just head over to `Settings / Storage` and enable `USB web interface`. My remarkable is now accessible via http://10.11.99.1/ and I can download single documents easily.
 
-We can even create a Gnome Dock Icon to link to the Remarkable web interface: https://askubuntu.com/questions/1045723/how-to-add-website-url-shortcut-to-ubuntu-dock-on-ubuntu-18-04 ([here's an icon](https://www.reddit.com/r/RemarkableTablet/comments/m063iu/i_was_tired_of_the_macos_app_icon_so_i_redesigned/) if you'd like)
+We can even create a Gnome Dock Icon to link to the Remarkable web interface: https://askubuntu.com/questions/1045723/how-to-add-website-url-shortcut-to-ubuntu-dock-on-ubuntu-18-04 ([here's an icon](https://www.reddit.com/r/RemarkableTablet/comments/m063iu/i_was_tired_of_the_macos_app_icon_so_i_redesigned/) if you'd like). This is my `Remarkable.desktop` file:
 
+```shell
+[Desktop Entry]
+Comment=Open Remarkable web interface
+Terminal=false
+Name=Remarkable web interface
+Exec=firefox http://10.11.99.1
+Type=Application
+Icon=/home/jonashackt/Downloads/remarkable-logo.png
+NoDisplay=false
+```
+
+Now look for the App in your Activities view (Windows key) and pin the Remarkable App to your Dock:
+
+![](remarkable-dock-icon.png)
 
 
 ## Remote Desktop on Manjaro
@@ -767,6 +781,11 @@ https://forum.manjaro.org/t/bash-with-autocomplete-and-fancy-flags/112108
 https://github.com/romkatv/powerlevel10k
 
 * Unable to cancel a command on Gnome terminal? Have a look at https://unix.stackexchange.com/a/33017/140406 and delete every `Strg+C` keyboard shortcut in the Gnome terminal settings!
+
+
+### Install Tiling Terminal Tilix
+
+https://gnunn1.github.io/tilix-web/
 
 
 
@@ -1743,6 +1762,15 @@ I already ordered and returned the Schenker Vision Pro 16 for various reasons (s
 
 So I didn't really give up on them - and that might come to a good end: https://www.reddit.com/r/XMG_gg/comments/18wrz0c/news_xmg_roadmap_2024_new_laptops_from_xmg_and/ Because at CES a great Laptpop has been announced: the XMG Focus 15 2024. Currently unavailable, this thing is undergoing a complete makeover and I'm so exited!
 
+News from reddit https://www.reddit.com/r/XMG_gg/comments/1ax7uty/news_xmg_roadmap_2024_xmg_neo_16_xmg_fusion_15/
+
+Here is also some new info: https://bestware.com/en/news/xmg-fusion-15-e24-and-core-15-m24
+
+> "XMG CORE 15 has the same connectivity options: the Thunderbolt 4 port is substituted with a USB-C 3.2 Gen2 port, which is also capable of PowerDelivery and DisplayPort, but linked to the integrated AMD graphics unit. However, the laptop also offers an additional Mini DisplayPort 1.4 with dGPU connection."
+
+Luckily the XMG Core will have a Thunderbold port wired to the **internal GPU**, thus you can run the system fully in iGPU only mode - even if you connect external screens!
+
+
 ## Look for your Notebook model on the Arch forums
 
 Since I currently run a Lenovo Thinkpad P1 Gen 6, I searched for it - and there are lots of suggestions:
@@ -1805,6 +1833,15 @@ The following kernels are installed in your system:
 ```
 
 Now install the `linux66-nvidia` package using pamac. Also `nvidia-settings` comes in handy as a GUI for your Nvidia card's settings, temperature etc.
+
+
+## External display support without dGPU
+
+Check before you buy! If you can disable the dGPU for longer battery life and still be able to use external displays. 
+
+Sadly it seems that my Thinkpad P1 has hard-wired USB-C/Thunderbold and HDMI ports to the NVIDIA dGPU :(
+
+https://www.reddit.com/r/thinkpad/comments/yv9viy/thinkpad_p1_gen_5_with_nvidia_disabled_external
 
 
 
@@ -1876,8 +1913,194 @@ If you bought one of the following laptops, you have great chances to be able to
 
 The cool thing about the latter is, that you can use both fully on other Laptops. Like for me I didn't found anything like these tools for Lenovo Thinkpads (only Vantage for Windows), although [they are fully certified for Linux since 2020](https://news.lenovo.com/pressroom/press-releases/lenovo-brings-linux-certification-to-thinkpad-and-thinkstation-workstation-portfolio-easing-deployment-for-developers-data-scientists/).
 
+But there are also tools that are vendor agnostic:
 
-## Getting your laptop silent: Fancontrol
+* TLP https://github.com/linrunner/TLP - uses `powertop --autotune` for example, see https://linrunner.de/tlp/introduction.html
+* https://itsfoss.com/cpufreq-ubuntu/
+* https://github.com/konkor/cpufreq
+
+
+## First things first: monitor your CPU temps & fan speed levels with thinkfan-ui
+
+The UI tool https://github.com/zocker-160/thinkfan-ui (not dependant nor related to the thinkfan package!) makes monitoring CPU temps and fan speed levels a breeze:
+
+![](thinkfan-ui.png)
+
+```shell
+pamac install thinkfan-ui
+```
+
+Also you can override the fan speed levels yourself and get your machine silent for some time (but be aware, that it might overheat without further tooling and configuration!)-
+
+
+## Getting your laptop silent: auto-cpufreq
+
+In some deep subreddit thread I found: https://github.com/AdnanHodzic/auto-cpufreq
+
+Which might be the tool I was searching for! It even hit 2.x not long ago: https://foolcontrol.org/?p=4603 and now features a GUI too. (there's also an intro post to the original tool release on 2020: https://foolcontrol.org/?p=3124)
+
+There's also a great introductory video on Youtube by the creator: https://youtu.be/SPGpkZ0AZVU?feature=shared
+
+> One of the problems with Linux today on laptops is that the CPU will run in an unoptimized manner which will negatively impact battery life. For example, the CPU may run using the "performance" governor with turbo boost enabled regardless of whether it's plugged into a power outlet or not.
+
+
+### Install auto-cpufreq
+
+Install via
+
+```shell
+sudo pamac install auto-cpufreq
+```
+
+As stated in the docs https://github.com/AdnanHodzic/auto-cpufreq?tab=readme-ov-file#aur-package-archmanjaro-linux we should also disable the Gnome Power Profiles daemon: 
+
+> The GNOME Power Profiles daemon is automatically disabled by auto-cpufreq-installer due to it's conflict with auto-cpufreq.service. However, this doesn't happen with AUR installs, which can lead to problems (e.g., #463) if not masked manually. 
+
+So we should mask the `power-profiles-daemon` via:
+
+```shell
+sudo systemctl mask power-profiles-daemon.service
+```
+
+
+
+Testdrive it via `sudo auto-cpufreq --monitor`
+
+```shell
+$ sudo auto-cpufreq --monitor
+
+Note: You can quit monitor mode by pressing "ctrl+c"
+
+-------------------------------------------------------------------------------
+
+Linux distro: Manjaro Linux 23.1.4 Vulcan
+Linux kernel: 6.6.19-1-MANJARO
+Processor: 13th Gen Intel(R) Core(TM) i7-13800H
+Cores: 20
+Architecture: x86_64
+Driver: intel_pstate
+
+------------------------------ Current CPU stats ------------------------------
+
+CPU max frequency: 5000 MHz
+CPU min frequency: 400 MHz
+
+Core	Usage	Temperature	Frequency
+CPU0      9.9%        58 °C      4911 MHz
+CPU1     13.0%        58 °C      4616 MHz
+CPU2      8.1%        59 °C      2452 MHz
+CPU3      0.0%        59 °C      3478 MHz
+CPU4      4.0%        58 °C      3908 MHz
+CPU5      3.0%        58 °C      1440 MHz
+CPU6      6.9%        62 °C      3395 MHz
+CPU7      3.0%        62 °C      3739 MHz
+CPU8      5.0%        60 °C      3213 MHz
+CPU9      1.0%        60 °C       400 MHz
+CPU10      3.0%        58 °C       587 MHz
+CPU11      3.0%        58 °C      2576 MHz
+CPU12      5.0%        62 °C      3393 MHz
+CPU13      3.9%        62 °C      2461 MHz
+CPU14      3.0%        62 °C      3602 MHz
+CPU15      2.0%        62 °C      3668 MHz
+CPU16      2.0%        59 °C      3673 MHz
+CPU17      1.0%        59 °C       400 MHz
+CPU18      1.0%        59 °C      2800 MHz
+CPU19      2.0%        59 °C      1402 MHz
+
+CPU fan speed: 2335 RPM
+
+---------------------------- CPU frequency scaling ----------------------------
+
+Battery is: charging
+
+Currently using: performance governor
+Suggesting use of "performance" governor
+
+Total CPU usage: 2.3 %
+Total system load: 2.40
+Average temp. of all cores: 59.70 °C 
+
+Load optimal (load average: 2.40, 2.62, 2.90)
+suggesting to set turbo boost: on
+Currently turbo boost is: on
+
+-------------------------------------------------------------------------------
+```
+
+If you already installed `slimbookbattery`, you will be warned that TLP https://github.com/linrunner/TLP. You can remove both via `sudo pamac remove --orphans slimbookbattery`
+
+```shell
+...
+----------------------------------- Warning -----------------------------------
+
+Detected you are running a TLP service!
+This daemon might interfere with auto-cpufreq which can lead to unexpected results.
+We strongly encourage you to remove TLP unless you really know what you are doing.
+
+-------------------------------------------------------------------------------
+...
+
+$ sudo pamac remove --orphans slimbookbattery
+```
+
+`--orphans` should also delete `tlp` and `tlp-rdw`, which is installed by slimbookbattery.
+
+
+
+We should also enable the daemon for autostart:
+
+```shell
+Important notice: the daemon installer provided does not work, instead run the following command:
+
+systemctl enable --now auto-cpufreq
+
+To view live log, run:
+
+auto-cpufreq --stats
+```
+
+
+### Use auto-cpufreq UI & `--force powersave` for silence
+
+There's also a new UI in 2.x. Find it in the Gnome activities menu:
+
+![](auto-cpufreq-start-ui-and-daemon.png)
+
+Now starting it, you have some options - but the UI is mostly useful to monitor the temps & clock speeds of your CPU(s).
+
+There is a button to do a CPU `Governor Override`, but this did not work on my Thinkpad P1 Gen 6. Because I wanted my laptop to be silent also when the powercord was plugged in. But there's a solution: run `sudo auto-cpufreq --force powersave` on the command line:
+
+```shell
+sudo auto-cpufreq --force powersave
+Set governor override to powersave
+```
+
+Now my laptop seems to be finally silent (running in the lowest RPM level 1 according to thinkfan UI):
+
+![](auto-cpufreq-governor-override-cli-silent-thinkpad.png)
+
+
+
+
+### Using Hybrid Mode instead of Integrated Graphics only
+
+I like to tinker and play with the tools once I got to know them, so I wanted to test, what the Thinkpad would do, if I switched to the `Hybrid` mode in envycontrol (on my machine, only this option doesn't work through the Gnome UI extension or even using `envycontrol -s hybrid. But what works for me is to simply reset envycontrol, which also means Hybrid via `envycontrol --reset`).
+
+What happend now really amazed me!! After restarting my Thinkpad, fans got a little louder and I opted for `sudo auto-cpufreq --force powersave` for auto-cpufreq. AND THIS was the GAMECHANGER: The system went 10 degrees DOWN! From average around 52 Celsius to 42! WITH the Nvidia card prepared to step in. Also the Nvidia Card itself got much cooler, only 37 Celsius instead of 40something with `Integrated`!
+
+> fans also STOPPED from time to time now!
+
+![](only-42-celcius-cpu-in-hybrid-mode-with-autocpufreq-powersave.png)
+
+The temporarily installed mission-center shows, that the integrated graphics are used in Hybrid mode with powersave Governor:
+
+![](mission-center-shows-igpu-usage.png)
+
+
+
+
+
+## Getting your laptop silent No.2: Fancontrol
 
 There are a multitude of options to change your fan control speeds, if your laptop goes crazy: https://wiki.archlinux.org/title/fan_speed_control
 
@@ -1885,11 +2108,88 @@ https://www.baeldung.com/linux/control-fan-speed
 
 https://www.libe.net/lueftersteuerung-debian
 
+
+Install lm_sensors
+
+```shell
+sudo pamac install lm_sensors
+```
+
+See https://wiki.ubuntuusers.de/Lm_sensors/
+
+Show your Systems fan and thermal configuration via `sensors` command:
+
+```shell
+$ sensors
+
+ucsi_source_psy_USBC000:002-isa-0000
+Adapter: ISA adapter
+in0:           0.00 V  (min =  +0.00 V, max =  +0.00 V)
+curr1:         0.00 A  (max =  +0.00 A)
+
+coretemp-isa-0000
+Adapter: ISA adapter
+Package id 0:  +61.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 0:        +50.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 4:        +52.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 8:        +53.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 12:       +53.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 16:       +53.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 20:       +53.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 24:       +55.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 25:       +55.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 26:       +55.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 27:       +55.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 28:       +54.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 29:       +54.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 30:       +54.0°C  (high = +100.0°C, crit = +100.0°C)
+Core 31:       +54.0°C  (high = +100.0°C, crit = +100.0°C)
+
+thinkpad-isa-0000
+Adapter: ISA adapter
+fan1:        2329 RPM
+fan2:        2036 RPM
+CPU:          +56.0°C  
+GPU:          +49.0°C  
+temp3:        +52.0°C  
+temp4:        +40.0°C  
+temp5:        +49.0°C  
+temp6:        +49.0°C  
+temp7:        +50.0°C  
+temp8:            N/A  
+
+BAT0-acpi-0
+Adapter: ACPI interface
+in0:          17.52 V  
+
+ucsi_source_psy_USBC000:001-isa-0000
+Adapter: ISA adapter
+in0:           0.00 V  (min =  +0.00 V, max =  +0.00 V)
+curr1:         3.00 A  (max =  +0.00 A)
+
+iwlwifi_1-virtual-0
+Adapter: Virtual device
+temp1:            N/A  
+
+nvme-pci-0600
+Adapter: PCI adapter
+Composite:    +41.9°C  (low  = -20.1°C, high = +77.8°C)
+                       (crit = +81.8°C)
+Sensor 1:     +41.9°C  (low  = -273.1°C, high = +65261.8°C)
+
+acpitz-acpi-0
+Adapter: ACPI interface
+temp1:        +56.0°C  
+```
+
+
 ### Thinkpads: thinkfan
 
 https://wiki.archlinux.org/title/fan_speed_control#ThinkPad_laptops
 
 There is a special tool for Thinkpads: https://github.com/vmatare/thinkfan 
+
+https://blog.monosoul.dev/2021/10/17/how-to-control-thinkpad-p14s-fan-speed-in-linux/
 
 And there's also a UI tool: https://github.com/zocker-160/thinkfan-ui (not dependand on thinkfan package):
 

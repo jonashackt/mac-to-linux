@@ -2092,10 +2092,20 @@ What happend now really amazed me!! After restarting my Thinkpad, fans got a lit
 
 ![](only-42-celcius-cpu-in-hybrid-mode-with-autocpufreq-powersave.png)
 
-The temporarily installed mission-center shows, that the integrated graphics are used in Hybrid mode with powersave Governor:
+The temporarily installed mission-center shows (you have to be careful, since it has a relatively high CPU load itself and thus changes the gauged temps!), that the integrated graphics are used in Hybrid mode with powersave Governor:
 
 ![](mission-center-shows-igpu-usage.png)
 
+
+### Using external Screens with auto-cpufreq powersave & NVidia is even possible in fan level 1!
+
+After also pluggin in my external screen (which is hard-wired to the discrete NVidia graphics card), I get a silent setup running smootly under 50 Celcius and thus in fan level 1! 
+
+![](external-monitor-autocpufreq-ipgu-and-nvidia-under-50-celcius.png)
+
+This means an external monitor (or presentation beamer) only uses 6-7 Celcius more of our thermal budget - which is now not a problem anymore, since we're starting from 42 Celsius!
+
+I'm really satisfied now finally. This was what I was searching for! Support for external screens without a much to loudly fan!
 
 
 
@@ -2393,7 +2403,7 @@ thinkfan -n
 If you get an error like this, remove the sensor from your `thinkfan.conf` and start again (you also need to adjust your sensor counts):
 
 ```shell
-sudo thinkfan -n                                                                                                                                                                                          ✔ 
+sudo thinkfan -n 
 ERROR: Lost sensor read_temps_: Failed to read temperature(s) from /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp8_input: No such device or address
 ```
 
@@ -2402,6 +2412,7 @@ If everything runs fine, you can watch thinkfan at work:
 ![](thinkfan-in-action.png)
 
 
+But sadly on my Thinkpad P1 Gen 6 I could change the lowest fan speed RPM to around 1000 - which would have been pretty nice!
 
 
 

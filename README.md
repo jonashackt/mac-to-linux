@@ -2392,13 +2392,12 @@ $ find /sys/devices -type f -name 'temp*_input'
 
 > Be aware that the path `/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/` will change - only it's last number, but that will be enough to currupt your thinkfan configuration!
 
-Therefore tTo prepare the sensors for our `thinkfan.conf`, we should use the `Base path with name-based search` configuration method - which should work with all hwmon drivers and is robust against driver load order!
+Therefore to prepare the sensors for our `thinkfan.conf`, we should use the `Base path with name-based search` configuration method - which should work with all hwmon drivers and is robust against driver load order!
 
 With this configuration method `thinkfan` will search for the sensors itself. Be sure to only use `coretemp` instead of `coretemp.0` or `thinkpad` instead of `thinkpad_hwmon` for example. Otherwise you will end up with error like `Could not find a hwmon with this name`!
 
 ```shell
 sensors:
-  # Because of that, I went with the more robust base path search method:
   # CPU Cores
   - hwmon: /sys/devices/platform
     name: coretemp # use coretemp instead of actual coretemp.0, which will lead to error: Could not find a hwmon with this name
@@ -2407,7 +2406,7 @@ sensors:
   # Chassis
   - hwmon: /sys/devices/platform
     name: thinkpad # use thinkpad instead of actual thinkpad_hwmon, which will lead to error: Could not find a hwmon with this name
-    indices: [1, 2, 3, 4, 5, 6, 7] # leave out 8, since this sensor is always broken and gives: Failed to read temperature(s) from /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon5/temp8_input: No such device or address
+    indices: [1, 3, 4, 6, 7] # leave out 2, 5 & 8, since this sensor is always broken and gives: Failed to read temperature(s) from /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon5/temp8_input: No such device or address
 
   # The SSDs have a stable path with their pci address
   # SSD
@@ -2434,11 +2433,14 @@ fans:
   - tpacpi: /proc/acpi/ibm/fan
 
 levels:
-  - [0, 0, 70]
-  - [1, 69, 75]
-  - [3, 73, 87]
-  - [7, 85, 255]
+  - [0, 0, 75]
+  - [1, 74, 80]
+  - [2, 79, 87]
+  - [3, 86, 90]
+  - [7, 89, 255]
 ```
+
+This is my current configuration for Spring and not so hot temperatures - it works well right now, with the Thinkpad hovering around 62 degrees with lot's of apps open / Firefox with 200 tabs / kind cluster etc. And only in combination with the `auto-cpufreq` powersave Governor! Might change in summer though :)
 
 This repo has also my fully working [`thinkfan.yaml`](thinkfan.yaml) ready, if you're interested.
 
@@ -2487,6 +2489,60 @@ sudo systemctl enable thinkfan.service
 Now thinkfan should work all the time as we configured it!
 
 
+Look at the service status from time to time:
+
+```shell
+$ sudo systemctl status thinkfan.service
+Place your right index finger on the fingerprint reader
+× thinkfan.service - simple and lightweight fan control program
+     Loaded: loaded (/usr/lib/systemd/system/thinkfan.service; enabled; preset: disabled)
+    Drop-In: /etc/systemd/system/thinkfan.service.d
+             └─override.conf
+     Active: failed (Result: exit-code) since Fri 2024-04-05 10:26:11 CEST; 36s ago
+   Duration: 27.015s
+    Process: 996 ExecStart=/usr/bin/thinkfan $THINKFAN_ARGS (code=exited, status=0/SUCCESS)
+   Main PID: 1035 (code=exited, status=1/FAILURE)
+        CPU: 45ms
+
+Apr 05 10:25:44 pikepad systemd[1]: Starting simple and lightweight fan control program...
+Apr 05 10:25:44 pikepad thinkfan[996]: Daemon PID: 1035
+Apr 05 10:25:44 pikepad thinkfan[1035]: Temperatures(bias): 71(0), 62(0), 66(0), 71(0), 62(0), 67(0), 67(0), 67(0), 67(0), 65(0), 65(0), 65(0), 65(0), 65(0), 60(0), 64(0), 56(0), 57(0), 43(0), 56(0), 53(0), 54(0), 43(0), 43(0) -> >
+Apr 05 10:25:44 pikepad systemd[1]: Started simple and lightweight fan control program.
+Apr 05 10:26:11 pikepad thinkfan[1035]: ERROR: Lost sensor read_temps_: Failed to read temperature(s) from /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp2_input: No such device or address
+Apr 05 10:26:11 pikepad systemd[1]: thinkfan.service: Main process exited, code=exited, status=1/FAILURE
+Apr 05 10:26:11 pikepad systemd[1]: thinkfan.service: Failed with result 'exit-code'.
+```
+
+Maybe there is a sensor not readable and you need to revamp your `thinkfan.yaml`. Then restart the service:
+
+```shell
+sudo cp ~/thinkfan.yaml /etc/thinkfan.yaml
+sudo systemctl start thinkfan.service 
+```
+
+Now the thinkfan service should work like a charme:
+
+```shell
+● thinkfan.service - simple and lightweight fan control program
+     Loaded: loaded (/usr/lib/systemd/system/thinkfan.service; enabled; preset: disabled)
+    Drop-In: /etc/systemd/system/thinkfan.service.d
+             └─override.conf
+     Active: active (running) since Fri 2024-04-05 11:08:36 CEST; 50s ago
+    Process: 1138 ExecStart=/usr/bin/thinkfan $THINKFAN_ARGS (code=exited, status=0/SUCCESS)
+   Main PID: 1149 (thinkfan)
+      Tasks: 1 (limit: 115413)
+     Memory: 1.7M (peak: 4.1M)
+        CPU: 48ms
+     CGroup: /system.slice/thinkfan.service
+             └─1149 /usr/bin/thinkfan -b0
+
+Apr 05 11:08:36 pikepad systemd[1]: Starting simple and lightweight fan control program...
+Apr 05 11:08:36 pikepad thinkfan[1138]: Daemon PID: 1149
+Apr 05 11:08:36 pikepad systemd[1]: Started simple and lightweight fan control program.
+Apr 05 11:08:36 pikepad thinkfan[1149]: Temperatures(bias): 66(0), 73(0), 61(0), 73(0), 59(0), 63(0), 63(0), 63(0), 63(0), 62(0), 61(0), 61(0), 61(0), 61(0), 63(0), 59(0), 54(0), 50(0), 51(0), 53(0), 48(0), 48(0) -> Fans: level 0
+```
+
+And stay at `level 0` for most of the time (which was my goal in the first place)!
 
 
 #### Advanced fans configuration

@@ -60,6 +60,7 @@ slimbookbattery
 steam
 teamviewer
 thinkfan-ui
+tilix
 timeshift
 timeshift-autosnap-manjaro
 tree

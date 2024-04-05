@@ -38,25 +38,7 @@ https://wiki.manjaro.org/index.php?title=Main_Page
 
 
 
-
-# Install Manjaro Linux
-
-Mostly nowadays that should be the UEFI guide that's interesting for you https://wiki.manjaro.org/index.php/UEFI_-_Install_Guide
-
-Download the matching ISO here https://manjaro.org/download/
-
-Format the `.iso` file into a USB stick. If you're on a Mac e.g. use https://etcher.balena.io.
-
-If you're on Linux or Windows have a look at https://wiki.manjaro.org/index.php/Burn_an_ISO_File#Writing_to_a_USB_Stick_in_Linux
-
-There's also an easy to use gui tool from Suse: https://github.com/openSUSE/imagewriter
-
-If you already have a Linux with Gnome running, you can use the `Disks` utility: Start `Disks`, select your USB stick, click on the two gears icons and select `Restore Partition Image`. Now find your downloaded e.g. `manjaro-gnome-23.1.3-240113-linux66.iso` from your file system and hit `Restore Image`:
-
-![](gnome-disks-format-usb-stick-with-iso.png)
-
-
-## Prepare your UEFI for Manjaro installation
+# Prepare your UEFI for Manjaro installation
 
 Disable Secure Boot in your UEFI setup. If you have concerns, see this thread and especially this answer: https://forum.manjaro.org/t/is-it-possible-to-enable-secure-boot/16156/12
 
@@ -81,7 +63,7 @@ https://wiki.archlinux.org/title/Data-at-rest_encryption
 https://wiki.archlinux.org/title/Self-encrypting_drives
 
 
-#### Prepare Thinkpad Fingerprint Reader
+#### Thinkpad Fingerprint Reader: You need Windows first
 
 Thinkpad with Fingerprint reader and OPAL protection: It is possible to enable a BIOS supervisor and nvme password, that you will be able to additionally secure with your fingerprints.
 
@@ -93,18 +75,72 @@ To register your fingerprints, you sadly need to have a Windows install before t
 
 > Because the password is required before the OS boots it is completely OS independent. Saves any configuration required to boot from encrypted drives in Linux etc. And yes you get fingerprint to unlock it. Just remember fingerprint registration requires windows so before you format and install linux, use windows to register your fingerprints, the format. 
 
+
+#### Dual Boot with Windows for Thinkpad Fingerprint Reader
+
+If you want to register your fingerprints, install Windows first - before Manjaro. It will make your life much easier!
+
+> Remember to have somebody with a Windows PC available who can create a Windows 11 bootable USB stick for you using Microsoft's [Media Creation Toolkit](https://www.microsoft.com/de-de/software-download/windows11) - every other solution (starting with downloading the Windows ISO) to create a Windows USB stick failed for me! Safe yourself some hours wasted in live!
+
 https://pcsupport.lenovo.com/us/en/products/laptops-and-netbooks/thinkbook-series/thinkbook-14-iml/videos/nvid500012-setting-up-fingerprint-reader-on-your-lenovo-pc
 
-If you installed Windows, then you can configure the fingerprints simply in the Windows security settings - and they will be written to the UEFI and will now be available to unlock your SSD. Cool eh!
+If you installed Windows, then you can configure the fingerprints simply in the Windows security settings - and they will be written to the UEFI / Embedded Controller (EC) firmware and will now be available to unlock your SSD. Cool eh!
+
+> The Lenovo Vantage Software for Windows is also the only way to update your UEFI: It's the best to do that right now! :)
+
+Now you need to install Manjaro in a dual boot fashion. Which is easy because, the installer will do everything for you:
 
 
 
-https://blog.rubenwardy.com/2022/11/16/thinkpad-x1-fingerprint-auth/
+# Install Manjaro Linux
+
+> WARNING: If you have a Thinkpad & want to use Fingerprint Reader to unlock your Self-Encrypting SSD, you need to install Windows first! See  `Dual Boot with Windows for Thinkpad Fingerprint Reader`
+
+Mostly nowadays that should be the UEFI guide that's interesting for you https://wiki.manjaro.org/index.php/UEFI_-_Install_Guide
+
+Download the matching ISO here https://manjaro.org/download/
+
+Format the `.iso` file into a USB stick. If you're on a Mac e.g. use https://etcher.balena.io.
+
+If you're on Linux or Windows have a look at https://wiki.manjaro.org/index.php/Burn_an_ISO_File#Writing_to_a_USB_Stick_in_Linux
+
+There's also an easy to use gui tool from Suse: https://github.com/openSUSE/imagewriter
+
+If you already have a Linux with Gnome running, you can use the `Disks` utility: Start `Disks`, select your USB stick, click on the two gears icons and select `Restore Partition Image`. Now find your downloaded e.g. `manjaro-gnome-23.1.3-240113-linux66.iso` from your file system and hit `Restore Image`:
+
+![](gnome-disks-format-usb-stick-with-iso.png)
 
 
+## dual-boot only: Show GRUB menu for a shorter period
+
+If you went the dual boot way with Windows, you will find that the GRUB boot menu will now pop up every time you boot the laptop. This might be not what you wanted, because you want Manjaro to start fast. Sadly with dual-boot [you can't completely eliminate the GRUB menu shows up](https://forum.manjaro.org/t/hide-grub-when-booting/97796/4):
+
+> If you have multiple OS in GRUB it will not be hidden, it will not accept 0 second timeout. [...] If Manjaro is the first boot option in your BIOS then it will load GRUB, and as you have multiple OS and GRUB is configured to detect other OS, it WILL show the menu.
+
+But, we can [reduce the 5 sec standard time the menu shows up](https://forum.manjaro.org/t/hide-grub-when-booting/97796/4):
+
+> To make 2s timeout, find GRUB_TIMEOUT in your `/etc/default/grub` and change its value to 2
+
+This would be what you want:
+
+```shell
+$ cat /etc/default/grub
+# GRUB boot loader configuration
+
+GRUB_DEFAULT=saved
+GRUB_TIMEOUT=2
+GRUB_DISTRIBUTOR="Manjaro"
+...
+```
+
+Now reload your GRUB config via
+
+```shell
+sudo update-grub
+```
 
 
-### Encryt whole file system with LUKS
+### Alternative to Self-Encrypting SSDs: Encryt whole file system with LUKS
 
 https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system
 
@@ -117,7 +153,6 @@ https://forum.manjaro.org/t/manjaro-with-full-disk-encryption-how-fast-how-stabl
 verdict:
 * Use Manjaro over Arch (since the installer has the encryption process baked in)
 * Use a SSD with Manjaro/Arch to have nearly no performance issues due to encryption
-* 
 
 In the Manjaro installer, the LUKS encryption is easily setup. Simply check `Encrypt system` and set a password:
 
@@ -189,6 +224,29 @@ Simply activate in Add/Remove Programs, since it's already installed - as the do
 > Navigate to the "AUR" and "Flatpak" tabs and slide the support toggle (it is also possible to enable checking for updates, which is recommended).
 
 Flatpack is super useful to install many Desktop applications like MS Teams, Zoom, Slack etc, but also has it's drawback.
+
+
+# Fingerprint Readers to unlock GNOME login & sudo CLI commands
+
+The whole internet tells us: fingerprint readers don't work in Linux. But that's not true anymore. At least I had luck with my Thinkpad P1 Gen 6:
+
+## Thinkpads
+
+Theres a thorough guide here: https://wiki.archlinux.org/title/fprint
+
+In my case with the Thinkpad P1 Gen 6 running Manjaro with GNOME, everything went super easy. I just stumbled upon the setting for fingerprints in the normal system settings at `Settings/Users`:
+
+![](settings-users.png)
+
+There's an option `Fingerprint Login`, where you can register all of your fingers (you have to choose the precise finger in the dropdown):
+
+![](gnome-fingerprint-registration.png)
+
+Now you should be able to login to your desktop using your finger! Really nice :) 
+
+
+If that doesn't work OOTB, maybe have a look at https://blog.rubenwardy.com/2022/11/16/thinkpad-x1-fingerprint-auth/
+
 
 
 # Backup Manjaro package list and reinstall on other machine
@@ -462,6 +520,27 @@ restic -r "/run/media/jonashackt/Extreme SSD/linuxbackup" restore latest --targe
 Don't insert the `--target` path with `/home/jonashackt` again, since that would create the restored backup in `/home/jonashackt/home/jonashackt`.
 
 
+# Firewall 
+
+https://wiki.manjaro.org/index.php/Firewalls
+
+The firewall package `ufw` should already be installed. If not: `pamac install ufw`
+
+To check it's status run:
+
+```shell
+ufw status
+```
+
+If that's looking like ufw isn't enabled, you should activate the service (it was on my Manjaro install) and enable ufw (it wasn't on my Manjaro install):
+
+```shell
+sudo systemctl enable ufw.service 
+
+sudo ufw enable 
+```
+
+
 
 # High Resolution Display (HiDPI) scaling
 
@@ -481,9 +560,9 @@ With my 2560 x 1600 I use a combination of Browser scaling (Firefox default zoom
 
 ## Spotlight like search
 
-https://github.com/cerebroapp/cerebro
+I tried https://github.com/cerebroapp/cerebro, which is quite nice - but didn't work all the time for me (it sometimes simply didn't pop up).
 
-Install it via the AUR package https://aur.archlinux.org/packages/cerebro-bin
+So I switched over to the GNOME `Activities` using the `Windows` key and then typing what I was searching for. Works flawlessly!
 
 
 ## Microsoft Teams
@@ -785,10 +864,27 @@ https://github.com/romkatv/powerlevel10k
 
 ### Install Tiling Terminal Tilix
 
+If you want a more advanced Tiling Terminal, have a look at Tilix:
+
 https://gnunn1.github.io/tilix-web/
 
+```shell
+sudo pamac install tilix
+```
 
 
+### Fix zsh: corrupt history file /home/jonashackt/.zhistory
+
+https://gggauravgandhi.medium.com/fix-for-zsh-corrupt-history-file-home-zsh-history-with-restore-history-to-new-file-f817a289d4aa
+
+If everytime you open your shell the following pops up: `zsh: corrupt history file /home/jonashackt/.zhistory` then do:
+
+```shell
+cd ~
+mv .zhistory .zhistory_old
+strings .zhistory_old > .zhistory
+fc -R .zhistory 
+```
 
 
 
@@ -1754,6 +1850,10 @@ Now bootup and try to use your new GRUB key layout :)
 
 
 
+
+
+
+
 # Hardware recommendations
 
 Finding a good enough laptop, that is suitable for Linux is really the hard part of the whole story! Especially, if you're coming from a Mac Book Pro. These are so incredibly good, that you need to dig deep into the hardware landscape.
@@ -1899,6 +1999,21 @@ Now fire up the GNOME Extension Manager, search for `gpu-profile-selector` and i
 With this your first `User-Installed Extension` should show up activated in the Extension Manager. Also bar now has the a new entry!!
 
 ![](gpu-profile-selector.png)
+
+
+### Switching to Hybrid mode with envycontrol: No Desktop after restart
+
+I had the problem that after clicking on `Hybrid` in the `gnome-shell-extension-gpu-profile-selector` UI or running `envycontrol -s hybrid` and restarting, my system only boots and ends up with a blinking cursor. I had to `Ctrl + Alt + F2 or F3` and change the tty to have a working console again. But it seems that the XServer just crashed at boot!
+
+I researched a bit but didn't really find a solution (only uninstalling `gnome-shell-extension-gpu-profile-selector` & `envycontrol`, which wasn't what I wanted).
+
+But there's a simple fix: Just reset envycontrol to it's defaults and the laptop will be in `Hybrid` mode again. Therefore simply run:
+
+```shell
+sudo envycontrol --reset
+```
+
+Now restart and the laptop is in Hybrid mode :)
 
 
 
@@ -2201,11 +2316,15 @@ There is a special tool for Thinkpads: https://github.com/vmatare/thinkfan
 
 https://blog.monosoul.dev/2021/10/17/how-to-control-thinkpad-p14s-fan-speed-in-linux/
 
-And there's also a UI tool: https://github.com/zocker-160/thinkfan-ui (not dependand on thinkfan package):
+Thinkpad related: https://github.com/vmatare/thinkfan/issues/58
 
-![](thinkfan-ui.png)
+Note that the thinkfan package installs /usr/lib/modprobe.d/thinkpad_acpi.conf, which contains the following kernel module parameter (so fan control is enabled by default):
 
-But sadly the problem for me persists with thinkfan-ui, since the minimal fan speed is 1, which means around 2320 rpms. This is quite loud! I wanted something to tweak my minimal fan speed to maybe 1000rpm - which should be barely hearable, but prevents the CPU and GPU in idle from beeing overheated better than the current mode: either 2300rpm or off (which is quite annoying).
+```shell
+options thinkpad_acpi fan_control=1
+```
+
+Install thinkfan:
 
 ```shell
 # Install thinkfan
@@ -2224,13 +2343,17 @@ commands:	enable, disable
 commands:	watchdog <timeout> (<timeout> is 0 (off), 1-120 (seconds))
 ```
 
+
 #### Temperatur sensors
 
 In order to configure thinkfan, use this file as the starting point: `/usr/share/doc/thinkfan/examples/thinkfan.yaml`
 
 > To configure the temperature thresholds, you will need to copy the example configuration file (/usr/share/doc/thinkfan/examples/thinkfan.yaml) to /etc/thinkfan.conf, and modify to taste. **This file specifies which sensors to read, and which interface to use to control the fan.**
 
-I found this gist of great help: https://gist.github.com/abn/de81ba413f860b00c2db3ee4aa83e035
+I found this gist of great help: 
+
+* https://gist.github.com/abn/de81ba413f860b00c2db3ee4aa83e035 
+* https://github.com/vmatare/thinkfan/discussions/153
 
 To specify your system's sensors for thinkfan, run `find /sys/devices -type f -name 'temp*_input'`.
 
@@ -2267,44 +2390,108 @@ $ find /sys/devices -type f -name 'temp*_input'
 /sys/devices/virtual/thermal/thermal_zone9/hwmon5/temp1_input
 ```
 
-To prepare the sensors for our `thinkfan.conf`, we should prefix all of them with `- hmon: `. There for run:
+> Be aware that the path `/sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/` will change - only it's last number, but that will be enough to currupt your thinkfan configuration!
+
+Therefore tTo prepare the sensors for our `thinkfan.conf`, we should use the `Base path with name-based search` configuration method - which should work with all hwmon drivers and is robust against driver load order!
+
+With this configuration method `thinkfan` will search for the sensors itself. Be sure to only use `coretemp` instead of `coretemp.0` or `thinkpad` instead of `thinkpad_hwmon` for example. Otherwise you will end up with error like `Could not find a hwmon with this name`!
 
 ```shell
-$ find /sys/devices -type f -name 'temp*_input' | xargs -I {} echo "- hwmon: {}" >> ~/thinkfan.conf 
+sensors:
+  # Because of that, I went with the more robust base path search method:
+  # CPU Cores
+  - hwmon: /sys/devices/platform
+    name: coretemp # use coretemp instead of actual coretemp.0, which will lead to error: Could not find a hwmon with this name
+    indices: [1, 2, 6, 10, 14, 18, 22, 26, 27, 28, 29, 30, 31, 32, 33]
 
-# the output should look somehow like this:
-cat thinkfan.conf
-- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp6_input
-- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp3_input
-- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp7_input
-- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp4_input
-- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp1_input
-- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp5_input
-- hwmon: /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp2_input
-- hwmon: /sys/devices/pci0000:00/0000:00:06.0/0000:06:00.0/nvme/nvme0/hwmon3/temp1_input
-- hwmon: /sys/devices/pci0000:00/0000:00:06.0/0000:06:00.0/nvme/nvme0/hwmon3/temp2_input
+  # Chassis
+  - hwmon: /sys/devices/platform
+    name: thinkpad # use thinkpad instead of actual thinkpad_hwmon, which will lead to error: Could not find a hwmon with this name
+    indices: [1, 2, 3, 4, 5, 6, 7] # leave out 8, since this sensor is always broken and gives: Failed to read temperature(s) from /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon5/temp8_input: No such device or address
+
+  # The SSDs have a stable path with their pci address
+  # SSD
+  - hwmon: /sys/devices/pci0000:00/0000:00:06.0/0000:06:00.0/nvme/nvme0/hwmon3/temp1_input
+  - hwmon: /sys/devices/pci0000:00/0000:00:06.0/0000:06:00.0/nvme/nvme0/hwmon3/temp2_input
+...
 ```
 
-Leave out all the `/sys/devices/platform/coretemp.0/hwmon/hwmon4` & `/sys/devices/virtual/thermal/thermal_zone0/hwmon1/` lines - they gave an error like `ERROR: /sys/devices/virtual/thermal/thermal_zone9/hwmon5/temp1_input: No such file or directory`.
+As you see my SSD also supports using the direct pci address - so we can simply use that!
 
-Only for the proprietary Nvidia driver: Also run `lspci | grep NVIDIA` to find the PCI bus id of your graphics card. We should configure it via:
+I left out all the `/sys/devices/virtual/thermal/thermal_zone0/hwmon1/` lines - they gave an error like `ERROR: /sys/devices/virtual/thermal/thermal_zone9/hwmon5/temp1_input: No such file or directory`.
+
+> Avoid using nvml option (temperatures read from proprietary nVidia GPU driver). Using nvml prevents the GPU from switching to suspend power state, causing battery drain and high temperatures. (see https://blog.monosoul.dev/2021/10/17/how-to-control-thinkpad-p14s-fan-speed-in-linux/)
+
+For me, these are 10 sensors. If you want to use the advanced fan configuration, you need to keep that in mind for the last configuration step.
+
+
+#### Simple fans & levels configuration
+
+If you can live with the 0-7 levels the Thinkpad offers, you can use this method. My `fans:` & `levels:` sections look like this:
 
 ```shell
-  # nvml: The proprietary nVidia driver
-  # ===================================
-  # Temperatures can be read directly from nVidia GPUs that run with the
-  # proprietary driver. The "nvml:" entry must specify the PCI bus ID of the
-  # GPU (can be found with lspci)
-  #
-  # Note that this does not work with the open-source "nouveau" driver. Open
-  # source drivers should support the hwmon interface instead (see above).
-  - nvml: 01:00.0
+fans:
+  - tpacpi: /proc/acpi/ibm/fan
+
+levels:
+  - [0, 0, 70]
+  - [1, 69, 75]
+  - [3, 73, 87]
+  - [7, 85, 255]
 ```
 
-For me, these are 10 sensors. We need to keep that in mind for the last configuration step.
+This repo has also my fully working [`thinkfan.yaml`](thinkfan.yaml) ready, if you're interested.
 
 
-#### Fans configuration
+#### Testdrive thinkfan 
+
+Copy the configuration you just crafted to:
+
+```shell
+sudo cp ~/thinkfan.yaml /etc/thinkfan.yaml
+```
+
+And testdrive thinkfan:
+
+```shell
+sudo thinkfan -n
+```
+
+If you get an error like this, remove the sensor from your `thinkfan.conf` (e.g. the indices section) and start again (you also need to adjust your sensor counts):
+
+```shell
+sudo thinkfan -n 
+ERROR: Lost sensor read_temps_: Failed to read temperature(s) from /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp8_input: No such device or address
+```
+
+If everything runs fine, you can watch thinkfan at work:
+
+![](thinkfan-in-action.png)
+
+
+> Alternatively we can also configure multiple fans in thinkfan: https://github.com/vmatare/thinkfan/discussions/153
+
+
+#### Start thinkfan on boot
+
+If you're satisfied with your thinkfan configuration, you can enable the thinkfan service to be there right after restarts:
+
+```shell
+# without the -n thinkfan will start as a daemon
+sudo thinkfan
+
+# enable the thinkfan service
+sudo systemctl enable thinkfan.service
+```
+
+Now thinkfan should work all the time as we configured it!
+
+
+
+
+#### Advanced fans configuration
+
+> You don't necessarily need this paragraph - only if you want to configure thinkfan even more finegrained
 
 My problem was, that the often mentioned `- tpacpi: /proc/acpi/ibm/fan` doesn't work for the more advanced configuration, where we want to change the fan speed from `0 - 255`:
 
@@ -2359,9 +2546,6 @@ fans:
    - hwmon: /sys/class/hwmon/hwmon6/pwm1
 ```
 
-
-#### Finally: Reducing the rpms in the first level
-
 Remember that we have 10 sensors? Well we therefore need 10 temperature entries (altough we only want to configure the speed levels more granularly):
 
 ```yaml
@@ -2385,35 +2569,9 @@ levels:
     lower_limit: [75, 75, 75, 75, 75, 75, 75, 75, 75, 75]
 ```
 
-
-#### Testdrive thinkfan 
-
-Copy the configuration you just crafted to:
-
-```shell
-sudo cp ~/thinkfan.yaml /etc/thinkfan.conf
-```
-
-And testdrive thinkfan:
-
-```shell
-thinkfan -n
-```
-
-If you get an error like this, remove the sensor from your `thinkfan.conf` and start again (you also need to adjust your sensor counts):
-
-```shell
-sudo thinkfan -n 
-ERROR: Lost sensor read_temps_: Failed to read temperature(s) from /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp8_input: No such device or address
-```
-
-If everything runs fine, you can watch thinkfan at work:
-
-![](thinkfan-in-action.png)
-
-
 But sadly on my Thinkpad P1 Gen 6 I could change the lowest fan speed RPM to around 1000 - which would have been pretty nice!
 
+Maybe these guys have something for me: https://github.com/vmatare/thinkfan/issues/58 - time will tell :D
 
 
 
@@ -2510,21 +2668,11 @@ https://www.computerbase.de/forum/threads/sammelthread-schenker-vision-16-pro-un
 
 
 
-# Fingerprint Readers
 
-## Thinkpads
 
-Theres a thorough guide here: https://wiki.archlinux.org/title/fprint
 
-In my case with the Thinkpad P1 Gen 6 running Manjaro with GNOME, everything went super easy. I just stumbled upon the setting for fingerprints in the normal system settings at `Settings/Users`:
 
-![](settings-users.png)
 
-There's an option `Fingerprint Login`, where you can register all of your fingers (you have to choose the precise finger in the dropdown):
-
-![](gnome-fingerprint-registration.png)
-
-Now you should be able to login to your desktop using your finger! Really nice :) 
 
 
 # Links

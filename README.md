@@ -108,7 +108,7 @@ There's also an easy to use gui tool from Suse: https://github.com/openSUSE/imag
 
 If you already have a Linux with Gnome running, you can use the `Disks` utility: Start `Disks`, select your USB stick, click on the two gears icons and select `Restore Partition Image`. Now find your downloaded e.g. `manjaro-gnome-23.1.3-240113-linux66.iso` from your file system and hit `Restore Image`:
 
-![](gnome-disks-format-usb-stick-with-iso.png)
+![](docs/gnome-disks-format-usb-stick-with-iso.png)
 
 
 ## dual-boot only: Show GRUB menu for a shorter period
@@ -156,7 +156,7 @@ verdict:
 
 In the Manjaro installer, the LUKS encryption is easily setup. Simply check `Encrypt system` and set a password:
 
-![](manjaro-installer-hdd-encryption.png)
+![](docs/manjaro-installer-hdd-encryption.png)
 
 This leverages dm-crypt's `LUKS on a partition` scenario https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system#LUKS_on_a_partition.
 
@@ -236,11 +236,11 @@ Theres a thorough guide here: https://wiki.archlinux.org/title/fprint
 
 In my case with the Thinkpad P1 Gen 6 running Manjaro with GNOME, everything went super easy. I just stumbled upon the setting for fingerprints in the normal system settings at `Settings/Users`:
 
-![](settings-users.png)
+![](docs/settings-users.png)
 
 There's an option `Fingerprint Login`, where you can register all of your fingers (you have to choose the precise finger in the dropdown):
 
-![](gnome-fingerprint-registration.png)
+![](docs/gnome-fingerprint-registration.png)
 
 Now you should be able to login to your desktop using your finger! Really nice :) 
 
@@ -600,7 +600,7 @@ Also I needed to configure two Chrome flags:
 --> chrome://flags/#enable-webrtc-pipewire-capturer = Enabled
 ```
 
-![](chrome-flags-screensharing.png)
+![](docs/chrome-flags-screensharing.png)
 
 
 Sadly my screensharing still didn't work! Looking into the service `xdg-desktop-portal-gnome`, I found lot's of `Failed to associate portal window with parent window` errors:
@@ -679,11 +679,11 @@ Nov 15 11:49:04 pikelinux systemd[2077]: Started Portal service (GNOME implement
 
 Now in Microsoft Teams again I granted the screensharing access to my whole screen:
 
-![](screensharing-grant-access-to-whole-screen.png)
+![](docs/screensharing-grant-access-to-whole-screen.png)
 
 Finally Screensharing in Teams worked:
 
-![](screensharing-working-chrome.png)
+![](docs/screensharing-working-chrome.png)
 
 
 
@@ -760,7 +760,7 @@ There's a great post on baeldung about this topic: https://www.baeldung.com/linu
 
 But we have some alternatives. First thing I checked was `gnome-online-accounts` (see [the docs](https://help.gnome.org/users/gnome-help/stable/accounts-which-application.html.en)). This package is already pre-installed on Manjaro. Simply head over to `preference / online accounts` and log in to your Google account. Now the Gnome file manager should have a new entry, where you can access your Google Drive files: 
 
-![](gnome-online-accounts-google-drive-integration.png)
+![](docs/gnome-online-accounts-google-drive-integration.png)
 
 But [they aren't stored locally sadly](https://gitlab.gnome.org/GNOME/nautilus/-/issues/784), so they will be downloaded every time you access them. And as the baeldung post states, the file names are completely obscured on the command line. E.g. if you have a file called `bla` in the file manager, it's named like `11lfzX-8dH_eWtf2JWa3caRtodOnlXDbN` on the command line and you even need to access it in a weird way like `cd '/run/user/1000/gvfs/google-drive:host=gmail.com,user=myemail'`.
 
@@ -776,11 +776,11 @@ There's a official Dropbox Linux client https://help.dropbox.com/de-de/installs/
 
 Compared to Drive the integration is superb. Start the app via the application menu and after the login you will find a Dropbox icon right at the top of your Gnome Desktop - just as you are used to on a Mac:
 
-![](dropbox-gnome-integration.png)
+![](docs/dropbox-gnome-integration.png)
 
 Also you can drag the folder `Dropbox` in your profile directory into the left menu bar of the Gnome file manager. And voila: you have the same integration as on a Mac!
 
-![](dropbox-gnome-filemanager-integration.png)
+![](docs/dropbox-gnome-filemanager-integration.png)
 
 
 
@@ -815,7 +815,7 @@ NoDisplay=false
 
 Now look for the App in your Activities view (Windows key) and pin the Remarkable App to your Dock:
 
-![](remarkable-dock-icon.png)
+![](docs/remarkable-dock-icon.png)
 
 
 ## Remote Desktop on Manjaro
@@ -836,7 +836,7 @@ This is super cool: So just enter the system settings menu, click on `Sharing` a
 
 Now on the client machine you need an RDP client. There are many around, like remmina https://software.manjaro.org/package/remmina#! or Thincast https://thincast.com/en . I tried Thincast and used my basement machines local network IP and the credentials from the Gnome Sharing menu. And it worked like a charm:
 
-![](remote-desktop-with-gnome-sharing-and-thincast.png)
+![](docs/remote-desktop-with-gnome-sharing-and-thincast.png)
 
 In Thincast the option `View / Smart Sizing` comes in very helpful, if the screens of Client and Server do have different resolutions.
 
@@ -945,7 +945,7 @@ LibreOffice looks way better than OpenOffice. But if you want to have it even sl
 
 Go to `View/User Interface...` and select `Tabbed`.
 
-![](libreoffice-tabbed-view-with-darkmode-color-icons.png)
+![](docs/libreoffice-tabbed-view-with-darkmode-color-icons.png)
 
 Choose another Icon theme, if the dark (black and white) icons aren't what you're looking for https://askubuntu.com/questions/979032/libreoffice-icons-hard-to-see-with-dark-themes
 
@@ -978,15 +978,15 @@ But there was no printer configured out-of-the-box. Although the driver (`PPD` f
 
 In the normal settings dialog had a `add printer` button, but my Canon network printer wasn't found there and I couldn't add it though:
 
-![](system-settings-printer.png)
+![](docs/system-settings-printer.png)
 
 So I went over to the console and started the CUPS gui directly just executing `system-config-printer`. Now adding a new printer in the CUPS gui also shows `network printers` - and there my Canon MX870 showed up!
 
-![](cups-gui-network-printer-found.png)
+![](docs/cups-gui-network-printer-found.png)
 
 Really nice. I clicked `forward` and the Driver was automatically set to `Canon MX870 series - CUPS+Gutenprint v5.3.4 Simplified`, which may also work - but we installed the original `Canon MX870 series Ver.3.30` right?! Therefore I changed the created printer after the wizard is finished and clicked on `brand and model` and change... and then selected the correct driver from the database:
 
-![](change-printer-driver.png)
+![](docs/change-printer-driver.png)
 
 I hoped my printer would work now, but trying to print a example page didn't work. A final piece was missing.
 
@@ -1016,29 +1016,29 @@ pamac install bottles
 
 Thereafter finish the UI's Wizard:
 
-![](bottles-wizard.png)
+![](docs/bottles-wizard.png)
 
 Now we need to download the Balsamiq Windows installer file like `Balsamiq_Wireframes_4.7.4_x64_Setup.exe` from https://balsamiq.com/wireframes/desktop/.
 
 Back in Bottles you need to create a new bottle. I choose `Application`, named it `Balsamiq` and just went with the defaults.
 
-![](balsamiq-bottle-creation.png)
+![](docs/balsamiq-bottle-creation.png)
 
 Then let Bottles setup the bottle. This may take a while. If the bottle is ready, hit the `Run Executable...` button and select the downloaded `Balsamiq_Wireframes_4.7.4_x64_Setup.exe`. The balasamic setup wizard should appear:
 
-![](balsamic-setup-wizard.png)
+![](docs/balsamic-setup-wizard.png)
 
 Now click on `Install for all users` and hit `Next` on dir selection, desktop shortcut and then `Install`. Finally click on `launch Balsamiq` and Balsamiq should appear:
 
-![](balsamic-runs-on-linux.png)
+![](docs/balsamic-runs-on-linux.png)
 
 If your Balsamiq is hardly readable (e.g. because you have set Manjaro's screen scaling to 200%), you may need to adjust the Bottle's display settings. Therefore head over to `Options` section and click on `Settings`. Now scroll down to `Display` section and select the `Advanced Display Settings`. Finally tweak the `Screen Scaling` settings. For me the default was `96 DPI`. I doubled it according to my Manjaro screen scaling of 200% to `192 DPI`: 
 
-![](bottles-screen-setting-dpi.png)
+![](docs/bottles-screen-setting-dpi.png)
 
 Now Balsamiq looked wonderful:
 
-![](balsamic-scaled-200percent.png)
+![](docs/balsamic-scaled-200percent.png)
 
 See also https://forum.usebottles.com/t/how-to-scale-the-bottles-application-for-hidpi/862
 
@@ -1168,7 +1168,7 @@ Now the command `VBoxManage list usbhost` should work as expected.
 
 Finally go to your VirtualBoxed Windows and click on `Devices / USB` and select your phone (which will exclusively bind your phone to the guest Windows for now). With that SmartSwitch should be able to access the phone:
 
-![](samsung-smart-switch-accessing-phone-host-usb.png)
+![](docs/samsung-smart-switch-accessing-phone-host-usb.png)
 
 
 
@@ -1178,7 +1178,7 @@ In order to create a shared folder to be able to have a directory, where Samsung
 
 In order to do that, we need to configure a optical drive to our VM:
 
-![](add-optical-drive-with-guest-additions-iso.png)
+![](docs/add-optical-drive-with-guest-additions-iso.png)
 
 Therefor head over to our VM's settings in VirtualBox and add a optical drive in the storage settings. Now VirtualBox will create a virtual optical drive with the guest additions iso inside.
 
@@ -1186,7 +1186,7 @@ Now inside the VM go to `Devices / insert guest additions` and they should show 
 
 Double click on the drive and the installation should start:
 
-![](install-guest-additions-via-double-click-on-drive.png))
+![](docs/install-guest-additions-via-double-click-on-drive.png))
 
 Follow through the Wizard and finally do the reboot required.
 
@@ -1196,7 +1196,7 @@ Now the folder should be available as a new networking location inside the Windo
 
 Fire up Samsung SmartSwitch and try to do a backup to your Manjaro host: Use somthing like `Z:\Samsung\SmartSwitch` as a path, since SmartSwitch will complain that it hasn't enough space available.
 
-![](samsung-smartswitch-use-manjaro-host-directory-for-backup.png)
+![](docs/samsung-smartswitch-use-manjaro-host-directory-for-backup.png)
 
 
 
@@ -1319,7 +1319,7 @@ docker run -it \
     sickcodes/docker-osx:ventura
 ```
 
-![](macos-ventura.png)
+![](docs/macos-ventura.png)
 
 It's important to run the `docker` command without `sudo` (see https://github.com/sickcodes/Docker-OSX/issues/91#issuecomment-786794711):
 
@@ -1327,7 +1327,7 @@ It's important to run the `docker` command without `sudo` (see https://github.co
 
 Now we should see a QEMU firing up running MacOS in recovery mode:
 
-![](macos-in-docker-on-linux.png)
+![](docs/macos-in-docker-on-linux.png)
 
 
 
@@ -1440,7 +1440,7 @@ Therefore head over to the disk utilities and erase the biggest QEMU harddrive w
 
 Then the MacOS install wizard should show the `MyDockyOSX` disk as a possible installation harddrive:
 
-![](mac-os-in-docker-install-wizard.png)
+![](docs/mac-os-in-docker-install-wizard.png)
 
 No worries: it's a virtual drive and only grows as needed :)
 
@@ -1450,7 +1450,7 @@ After 2 hours or so the setup process should be ready and the MacOS configuratio
 
 If you managed to get past these screens, you should have a running MacOS:
 
-![](mac-os-running-in-docker-on-linux.png)
+![](docs/mac-os-running-in-docker-on-linux.png)
 
 
 
@@ -1599,7 +1599,7 @@ sshfs user@localhost:/Users/jonashecht/ -p 50922 ~/osxfileshare
 
 Double click onto `~/osxfileshare` inside the home dir of the Linux host and the MacOS home dir should be accessible via the GNOME filemanager:
 
-![](osxfileshare-mounted-in-gnome.png)
+![](docs/osxfileshare-mounted-in-gnome.png)
 
 
 
@@ -1994,11 +1994,11 @@ pamac install extension-manager
 
 Now fire up the GNOME Extension Manager, search for `gpu-profile-selector` and install it:
 
-![](gnome-extension-manager.png)
+![](docs/gnome-extension-manager.png)
 
 With this your first `User-Installed Extension` should show up activated in the Extension Manager. Also bar now has the a new entry!!
 
-![](gpu-profile-selector.png)
+![](docs/gpu-profile-selector.png)
 
 
 ### Switching to Hybrid mode with envycontrol: No Desktop after restart
@@ -2039,7 +2039,7 @@ But there are also tools that are vendor agnostic:
 
 The UI tool https://github.com/zocker-160/thinkfan-ui (not dependant nor related to the thinkfan package!) makes monitoring CPU temps and fan speed levels a breeze:
 
-![](thinkfan-ui.png)
+![](docs/thinkfan-ui.png)
 
 ```shell
 pamac install thinkfan-ui
@@ -2179,7 +2179,7 @@ auto-cpufreq --stats
 
 There's also a new UI in 2.x. Find it in the Gnome activities menu:
 
-![](auto-cpufreq-start-ui-and-daemon.png)
+![](docs/auto-cpufreq-start-ui-and-daemon.png)
 
 Now starting it, you have some options - but the UI is mostly useful to monitor the temps & clock speeds of your CPU(s).
 
@@ -2192,7 +2192,7 @@ Set governor override to powersave
 
 Now my laptop seems to be finally silent (running in the lowest RPM level 1 according to thinkfan UI):
 
-![](auto-cpufreq-governor-override-cli-silent-thinkpad.png)
+![](docs/auto-cpufreq-governor-override-cli-silent-thinkpad.png)
 
 
 
@@ -2205,18 +2205,18 @@ What happend now really amazed me!! After restarting my Thinkpad, fans got a lit
 
 > fans also STOPPED from time to time now!
 
-![](only-42-celcius-cpu-in-hybrid-mode-with-autocpufreq-powersave.png)
+![](docs/only-42-celcius-cpu-in-hybrid-mode-with-autocpufreq-powersave.png)
 
 The temporarily installed mission-center shows (you have to be careful, since it has a relatively high CPU load itself and thus changes the gauged temps!), that the integrated graphics are used in Hybrid mode with powersave Governor:
 
-![](mission-center-shows-igpu-usage.png)
+![](docs/mission-center-shows-igpu-usage.png)
 
 
 ### Using external Screens with auto-cpufreq powersave & NVidia is even possible in fan level 1!
 
 After also pluggin in my external screen (which is hard-wired to the discrete NVidia graphics card), I get a silent setup running smootly under 50 Celcius and thus in fan level 1! 
 
-![](external-monitor-autocpufreq-ipgu-and-nvidia-under-50-celcius.png)
+![](docs/external-monitor-autocpufreq-ipgu-and-nvidia-under-50-celcius.png)
 
 This means an external monitor (or presentation beamer) only uses 6-7 Celcius more of our thermal budget - which is now not a problem anymore, since we're starting from 42 Celsius!
 
@@ -2466,7 +2466,7 @@ ERROR: Lost sensor read_temps_: Failed to read temperature(s) from /sys/devices/
 
 If everything runs fine, you can watch thinkfan at work:
 
-![](thinkfan-in-action.png)
+![](docs/docs/thinkfan-in-action.png)
 
 
 > Alternatively we can also configure multiple fans in thinkfan: https://github.com/vmatare/thinkfan/discussions/153

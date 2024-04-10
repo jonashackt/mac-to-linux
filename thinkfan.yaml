@@ -157,6 +157,10 @@ fans:
 # driver only (see above)
 #
 levels:
+  # Summer / Outdoor
+  #- [0, 0, 60]
+  #- [1, 59, 80]
+  # Winter / Spring / Indoor
   - [0, 0, 75]
   - [1, 74, 80]
   - [2, 79, 87]

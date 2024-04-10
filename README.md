@@ -900,6 +900,20 @@ fc -R .zhistory
 * Show Hidden `.` files in home dir: `Strg - H`
 
 
+## Zoom text in gedit
+
+https://askubuntu.com/questions/108967/how-to-zoom-in-and-out-of-text-in-gedit
+
+```shell
+sudo pamac install gedit-plugins
+```
+
+Now there's a new gedit plugin available called `Text size`:
+
+![](docs/text-size-gedit.png)
+
+
+
 ## Print multiple jpgs to PDF
 
 The easy "Vorschau" app on MacOS had this feature, but I can't find it in gthumb. But it's there somehow https://gnulinux.ch/bilder-drucken with the great [ImageMagick](https://en.wikipedia.org/wiki/ImageMagick).
@@ -923,7 +937,7 @@ https://xournalpp.github.io/
 The correct Arch/Manjaro package is named `xournalpp`:
 
 ```shell
-pamac install xournalpp
+sudo pamac install xournalpp
 ```
 
 I also often read about LibreOffice Draw (like in here https://askubuntu.com/a/786795/451114), where you can
@@ -2224,7 +2238,6 @@ I'm really satisfied now finally. This was what I was searching for! Support for
 
 
 
-
 ## Getting your laptop silent No.2: Fancontrol
 
 There are a multitude of options to change your fan control speeds, if your laptop goes crazy: https://wiki.archlinux.org/title/fan_speed_control
@@ -2440,7 +2453,12 @@ levels:
   - [7, 89, 255]
 ```
 
-This is my current configuration for Spring and not so hot temperatures - it works well right now, with the Thinkpad hovering around 62 degrees with lot's of apps open / Firefox with 200 tabs / kind cluster etc. And only in combination with the `auto-cpufreq` powersave Governor! Might change in summer though :)
+This is my current configuration for Spring and not so hot temperatures - it works well right now, __with the Thinkpad hovering around 62°C__ with lot's of apps open / Firefox with 200 tabs / kind cluster etc. And only in combination with the `auto-cpufreq` powersave Governor, NO external screen and envycontrol Hybrid mode! Might change in summer though :)
+
+For the best CPU temp levels, see https://www.avast.com/c-how-to-check-cpu-temperature & `What CPU temperature is normal?` paragraph
+
+> __Generally, anything between 40–65°C (or 104–149°F) is considered a safe heat range for a normal workload.__ While running more intensive apps or games, the normal CPU temp range can increase to between 70–80°C (158–176°F). The rule of thumb is, a bad CPU temp is 80-85°C (176–185°F) or above. There could be a serious problem if you’re reaching this temperature without gaming or running any resource-intensive programs.
+
 
 This repo has also my fully working [`thinkfan.yaml`](thinkfan.yaml) ready, if you're interested.
 
@@ -2628,6 +2646,35 @@ levels:
 But sadly on my Thinkpad P1 Gen 6 I could change the lowest fan speed RPM to around 1000 - which would have been pretty nice!
 
 Maybe these guys have something for me: https://github.com/vmatare/thinkfan/issues/58 - time will tell :D
+
+
+## Getting your laptop silent No.3: Combining Hybrid Mode, auto-cpufreq & Fancontrol with thinkfan service for ultimate silence
+
+After some more testing I observed that I maybe was wrong in analysing modern thermal throttling and energy saving tactics of CPUs.
+
+I thought that eliminating the graphics card, must lead to a colder laptop: I was wrong! Hybrid mode is much cooler (see above)
+
+The temperatures are really low right now in completely fanless setup - around 55 Degrees:
+
+![](docs/hybrid-auto-cpufreq-powersave-temp.png)
+
+> 55 Degrees seems to be related no non-battery-charging situations, whereas the 62 Degress occur, when the battery is charging.
+
+
+
+## Use Multitouch gestures in Gnome with Nvidia drivers and X11
+
+https://forum.manjaro.org/t/how-to-enable-wayland-touch-gestures-on-x11/141723
+
+https://extensions.gnome.org/extension/4033/x11-gestures/
+
+https://github.com/JoseExposito/gnome-shell-extension-x11gestures
+
+![](docs/wayland-gestures-on-x11.png)
+
+Also for more finegrained settings, search for `Touche` settings in your Activities:
+
+![](docs/touche-gestures-app.png)
 
 
 

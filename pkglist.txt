@@ -26,7 +26,7 @@ geary
 gedit
 github-cli
 helm
-heroku-cli
+heroku-cli-bin
 homebank
 imagewriter
 jdk-openjdk
@@ -35,6 +35,7 @@ kind-bin
 kubectl-bin
 kubectx
 kustomize
+lib32-libusb-compat
 libreoffice-fresh
 libreoffice-fresh-de
 libvirt
@@ -58,6 +59,7 @@ resticprofile-bin
 slack-desktop
 slimbookbattery
 steam
+sublime
 teamviewer
 thinkfan-ui
 tilix

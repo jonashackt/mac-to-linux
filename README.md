@@ -738,6 +738,24 @@ sudo snap install miro
 ```
 
 
+## Mailclient: Thunderbird
+
+The most used mail client on Linux is undoubtly Thunderbird. Install it simply via pamac.
+
+### Tweak Thunderbird Search: Quick Filters!
+
+Using the search bar on top of Thunderbird seems to be a no-brainer. But I regularly found myself beeing overwhelmed by the default results page - thus clicking on `Show results as list` everytime I used the search bar... Which led my Thunderbird becoming a mess soon with lots of tabs:
+
+![](docs/thunderbird-search-results-as-list-mess.png)
+
+Because of this I wondered if one can configure Thunderbird to use the `Show results as list` view simply as the default. [But there's a much better thing: __Quick Filters__!](https://support.mozilla.org/en-US/questions/1401708) Simply activate the quick filters via `View/Toolbars/Quick Filter Bar` and you will be able to search much more effectively:
+
+![](docs/thunderbird-quick-filters.png)
+
+Finally via `View/Toolbars/Toolbar Layout` you can even remove the Thunderbird Search bar at the top - because everything you need are Quick Filters now :)
+
+
+
 ## SIP Telefone app for Linux
 
 If you're like me you want to be callable even when you're mobile phone is on airplane mode. The easiest solution is a SIP phone client software, where you just configure your SIP credentials and can use your laptop or desktop machine to have phone calls.
@@ -962,6 +980,150 @@ Go to `View/User Interface...` and select `Tabbed`.
 ![](docs/libreoffice-tabbed-view-with-darkmode-color-icons.png)
 
 Choose another Icon theme, if the dark (black and white) icons aren't what you're looking for https://askubuntu.com/questions/979032/libreoffice-icons-hard-to-see-with-dark-themes
+
+
+
+## Wifi
+
+At home using my FritzBox I don't experience any problems.
+
+But in the German trains (ICE Wifi) I had problems using the free wifi there. Also at some customer's corporate Wifi endpoints I had issues. My wifi got connected, but I did not get a working internet connection.
+
+So [how to analyse wifi issues](https://forum.manjaro.org/t/manjaro-detected-intel-alder-lake-p-pch-cnvi-wifi-but-the-driver-is-n-a/135654)?
+
+```shell
+# First show your Wifi card is loaded 
+$ inxi -Nazy
+
+Network:
+  Device-1: Intel Raptor Lake PCH CNVi WiFi driver: iwlwifi v: kernel
+    bus-ID: 00:14.3 chip-ID: 8086:51f1 class-ID: 0280
+```
+
+Now let's have a look at the kernel messages regarding your wifi card:
+
+```shell
+$ sudo dmesg | grep iwlwifi
+
+[    8.610697] iwlwifi 0000:00:14.3: enabling device (0000 -> 0002)
+[    8.614945] iwlwifi 0000:00:14.3: Detected crf-id 0x400410, cnv-id 0x80400 wfpm id 0x80000020
+[    8.614987] iwlwifi 0000:00:14.3: PCI dev 51f1/0090, rev=0x370, rfid=0x2010d000
+[    8.633799] iwlwifi 0000:00:14.3: api flags index 2 larger than supported by driver
+[    8.633818] iwlwifi 0000:00:14.3: TLV_FW_FSEQ_VERSION: FSEQ Version: 0.0.2.41
+[    8.634446] iwlwifi 0000:00:14.3: loaded firmware version 83.e8f84e98.0 so-a0-gf-a0-83.ucode op_mode iwlmvm
+[    8.827696] iwlwifi 0000:00:14.3: Detected Intel(R) Wi-Fi 6E AX211 160MHz, REV=0x370
+[    8.837301] iwlwifi 0000:00:14.3: WRT: Invalid buffer destination
+[    8.997963] iwlwifi 0000:00:14.3: WFPM_UMAC_PD_NOTIFICATION: 0x20
+[    8.998010] iwlwifi 0000:00:14.3: WFPM_LMAC2_PD_NOTIFICATION: 0x1f
+[    8.998017] iwlwifi 0000:00:14.3: WFPM_AUTH_KEY_0: 0x90
+[    8.998025] iwlwifi 0000:00:14.3: CNVI_SCU_SEQ_DATA_DW9: 0x0
+[    8.998286] iwlwifi 0000:00:14.3: loaded PNVM version e28bb9d7
+[    8.999418] iwlwifi 0000:00:14.3: RFIm is deactivated, reason = 4
+[    9.014374] iwlwifi 0000:00:14.3: Detected RF GF, rfid=0x2010d000
+[    9.084793] iwlwifi 0000:00:14.3: base HW address: 6c:f6:da:a1:8a:d3
+[    9.105225] iwlwifi 0000:00:14.3 wlp0s20f3: renamed from wlan0
+[   46.587403] iwlwifi 0000:00:14.3: WRT: Invalid buffer destination
+[   46.748862] iwlwifi 0000:00:14.3: WFPM_UMAC_PD_NOTIFICATION: 0x20
+[   46.748918] iwlwifi 0000:00:14.3: WFPM_LMAC2_PD_NOTIFICATION: 0x1f
+[   46.748927] iwlwifi 0000:00:14.3: WFPM_AUTH_KEY_0: 0x90
+[   46.748936] iwlwifi 0000:00:14.3: CNVI_SCU_SEQ_DATA_DW9: 0x0
+[   46.750398] iwlwifi 0000:00:14.3: RFIm is deactivated, reason = 4
+[   46.845999] iwlwifi 0000:00:14.3: Registered PHC clock: iwlwifi-PTP, with index: 0
+```
+
+I turned out that my local Kubernetes in Docker (kind) cluster created the problems. The Docker network that my kind cluster created had the same IP address range as many Wifis (like the Deutsche Bahn Wifi on ICE or several Customer Wifis). [Here's the solution](https://unix.stackexchange.com/a/775161/140406):
+
+A `ip route show` already made the problem visible:
+
+    $ ip route show
+    default via 172.18.0.1 dev wlp0s20f3 proto dhcp src 172.18.190.49 metric 20600 
+    172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 
+    172.18.0.0/16 dev br-43d8dc2b2c68 proto kernel scope link src 172.18.0.1 
+    172.18.0.0/16 dev wlp0s20f3 proto kernel scope link src 172.18.190.49 metric 600 
+
+But I couldn't identify which program created `br-43d8dc2b2c68`. A `docker network ls` brought me to the source. It was my local kind cluster:
+
+    $ docker network ls
+    NETWORK ID     NAME      DRIVER    SCOPE
+    23ed3caa264b   bridge    bridge    local
+    1ee621aa8c0e   host      host      local
+    43d8dc2b2c68   kind      bridge    local
+    49f62ac6dea5   none      null      local
+
+Inspecting the network via `docker inspect` which is also named nearly the same revealed the problem:
+
+    docker inspect 43d8dc2b2c68
+    [
+        {
+            "Name": "kind",
+            "Id": "43d8dc2b2c68fa3744c378f6b3b5607a03f8e04e50a497984590bad2fb9b1b30",
+            "Created": "2024-03-14T13:35:51.518082136+01:00",
+            "Scope": "local",
+            "Driver": "bridge",
+            "EnableIPv6": true,
+            "IPAM": {
+                "Driver": "default",
+                "Options": {},
+                "Config": [
+                    {
+                        "Subnet": "172.18.0.0/16",
+                        "Gateway": "172.18.0.1"
+                    },
+                    {
+                        "Subnet": "fc00:f853:ccd:e793::/64",
+                        "Gateway": "fc00:f853:ccd:e793::1"
+                    }
+                ]
+            },
+            "Internal": false,
+            "Attachable": false,
+            "Ingress": false,
+            "ConfigFrom": {
+                "Network": ""
+            },
+            "ConfigOnly": false,
+            "Containers": {},
+            "Options": {
+                "com.docker.network.bridge.enable_ip_masquerade": "true",
+                "com.docker.network.driver.mtu": "1500"
+            },
+            "Labels": {}
+        }
+    ]
+
+Deleting the kind cluster and than pruning the left over network solved the issue for me. Show kind clusters:
+
+    $ kind get clusters
+    kind
+
+Delete kind cluster:
+
+    $ kind delete clusters kind
+    Deleted nodes: ["kind-control-plane"]
+    Deleted clusters: ["kind"]
+
+Now prune the unused kind Docker network:
+
+    $ docker network prune
+    WARNING! This will remove all custom networks not used by at least one container.
+    Are you sure you want to continue? [y/N] y
+    Deleted Networks:
+    kind
+
+After re-creating my kind cluster via `kind create cluster --image kindest/node:v1.29.2 --wait 5m` the kind network bridge came back - but with a wifionice compatible IP range `172.19.0.0/16`:
+
+    $ docker network ls
+    NETWORK ID     NAME      DRIVER    SCOPE
+    23ed3caa264b   bridge    bridge    local
+    1ee621aa8c0e   host      host      local
+    17ace3590fae   kind      bridge    local
+    49f62ac6dea5   none      null      local
+
+    $ ip route
+    default via 172.18.0.1 dev wlp0s20f3 proto dhcp src 172.18.190.49 metric 600 
+    172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 
+    172.18.0.0/16 dev wlp0s20f3 proto kernel scope link src 172.18.190.49 metric 600 
+    172.19.0.0/16 dev br-17ace3590fae proto kernel scope link src 172.19.0.1 
 
 
 

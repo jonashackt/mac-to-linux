@@ -59,6 +59,7 @@ resticprofile-bin
 slack-desktop
 slimbookbattery
 steam
+sshfs
 sublime
 teamviewer
 thinkfan-ui

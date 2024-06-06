@@ -1314,6 +1314,26 @@ Successfully imported the appliance.
 Now the box is already available inside your VirtualBox gui. 
 
 
+### Fix VirtualBox can't operate in VMX root mode. Please disable the KVM kernel
+
+If starting the Virtual Machine gives the following error:
+
+```shell
+VirtualBox can't operate in VMX root mode. Please disable the KVM kernel extension, recompile your kernel and reboot (VERR_VMX_IN_VMX_ROOT_MODE).
+```
+
+it's very likely you also have Qemu installed (e.g. for running MacOS in Docker) and [you need to unload some kernel modules regarding kvm](https://ubuntuforums.org/showthread.php?t=1102142):
+
+```shell
+# show kvm kernel modules on your system
+lsmod | grep kvm
+
+# unload kvm kernel modules (you need to use the exact names form the lsmod command)
+sudo modprobe -r kvm_intel
+sudo modprobe -r kvm
+```
+
+
 ### Accessing USB devices (like Samsung Android phones) inside the Windows guest
 
 Be sure to configure the following tweaks manually (until we get the automation working again):
@@ -1338,7 +1358,7 @@ But [there's help](https://askubuntu.com/a/377781/451114): We need to add our us
 sudo usermod -a -G vboxusers $USER
 ```
 
-Log off or even restart your machine - and then check via `groups $USER`, if your user is part of the group `vboxusers`. 
+Restart your machine (logoff didn't suffice for me) - and then check via `groups $USER`, if your user is part of the group `vboxusers`. 
 
 Now the command `VBoxManage list usbhost` should work as expected.
 
@@ -1453,7 +1473,7 @@ Let's try this out! First we need to [get some prerequisites ready](https://gith
 Now if you have hardware virtualization activated, we need to install some packages:
 
 ```
-sudo pamac install qemu libvirt qemu-desktop dnsmasq virt-manager bridge-utils flex bison iptables-nft edk2-ovmf
+sudo pamac install qemu libvirt qemu-desktop dnsmasq virt-manager bridge-utils flex bison iptables-nft edk2-ovmf sshfs
 ```
 
 Since pamac [will prompt you for optional dependencies](https://www.reddit.com/r/archlinux/comments/1z9y3l/install_optional_dependencies/), I choosed `none` and used `2:  qemu-desktop  8.1.0-2  extra` as the QEMU provider.

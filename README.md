@@ -2953,7 +2953,11 @@ https://www.computerbase.de/forum/threads/sammelthread-schenker-vision-16-pro-un
 
 
 
+## hardware relevant links
 
+https://www.gamestar.de/artikel/braucht-es-ueberhaupt-noch-windows-ein-linux-selbstversuch,3412657.html
+
+https://www.youtube.com/watch?v=R2FPLuYB1o4
 
 
 

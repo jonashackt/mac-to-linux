@@ -2962,6 +2962,17 @@ https://www.youtube.com/watch?v=R2FPLuYB1o4
 
 
 
+# Strange problems and solutions
+
+## Thunderbold Dock incl. USB-C Power Delivery stopped working
+
+On July 29 2024 my Thinkpad suddenly lost connection to my Thunderbold Dock. I double checked with my USB-C charger - and it also didn't work. I started to google and found https://github.com/pop-os/pop/issues/2525 and https://bbs.archlinux.org/viewtopic.php?pid=2186894#p2186894
+
+I really wondered, if in 2024 there are really hardware reset holes in laptop cases... But yeah, there are. And THEY WORK! Here's [a video explanation](https://www.youtube.com/watch?v=AxUI5WKDr7s). After using a paper clip and pressing it into the bottom of my laptop for 10 secs, Thunderbold started to work again :)
+
+
+
+
 
 
 # Links

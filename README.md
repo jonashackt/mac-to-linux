@@ -1414,7 +1414,7 @@ systemctl start docker.service
 To permantently start the docker service on every restart, run the following:
 
 ```shell
-sudo systemctl enable myservice
+sudo systemctl enable docker.service
 ```
 
 That should be everything to fire up our first Docker container on Linux:

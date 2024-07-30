@@ -737,6 +737,15 @@ Now install Miro via snap:
 sudo snap install miro
 ```
 
+## Spotify
+
+If you installed snap already as described in **Miro** above, simply run
+
+```shell
+nap install spotify
+```
+
+Thats the [only Spotify client for Linux](https://www.spotify.com/de/download/linux/) available.
 
 ## Mailclient: Thunderbird
 

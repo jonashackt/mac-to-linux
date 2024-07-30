@@ -2196,6 +2196,7 @@ With this your first `User-Installed Extension` should show up activated in the 
 
 ![](docs/gpu-profile-selector.png)
 
+There's also a great Gnome extension showing all relevant temperatures in the system's top bar: [Resource Monitor](https://extensions.gnome.org/extension/1634/resource-monitor/) https://github.com/0ry0n/Resource_Monitor Install it via Extension Manager and configure it accordingly.
 
 ### Switching to Hybrid mode with envycontrol: No Desktop after restart
 

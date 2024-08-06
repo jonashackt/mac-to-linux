@@ -859,9 +859,9 @@ And
 
 But nevertheless don't use plain RDP over the internet without VPN etc.!
 
-This is super cool: So just enter the system settings menu, click on `Sharing` and activate `Remote Desktop` and `Remote Control` on the machine you want to connect to.
+This is super cool: So just enter the system settings menu, click on `System` and `Remote Desktop`. In the tab `Desktop Sharing` activate the slider also named `Desktop Sharing` and `Remote Control` on the machine you want to connect to.
 
-Now on the client machine you need an RDP client. There are many around, like remmina https://software.manjaro.org/package/remmina#! or Thincast https://thincast.com/en . I tried Thincast and used my basement machines local network IP and the credentials from the Gnome Sharing menu. And it worked like a charm:
+Now on the client machine you need an RDP client. There are many around, like remmina https://software.manjaro.org/package/remmina#! or Thincast https://thincast.com/en . I tried Thincast and used my basement machines local network IP and the credentials from the Gnome Sharing menu (or your Tailscale host name :) ). Also use the user and password provided in the settings. And it worked like a charm:
 
 ![](docs/remote-desktop-with-gnome-sharing-and-thincast.png)
 

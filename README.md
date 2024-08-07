@@ -27,6 +27,10 @@ I tried to come up with some:
 
 There are some popular options with rolling releases like https://distrowatch.com/table.php?distribution=endeavour
 
+Here's a great example, why Manjaro is a fantastic choice for software developers: You get up to date versions of the libraries you want - in the default system package manager: https://rclone.org/install/#package-manager and this image:
+
+![](https://repology.org/badge/vertical-allrepos/rclone.svg?columns=3)
+
 `tbd: more info on distro choosing`
 
 Finally I opted for Manjaro Linux https://manjaro.org/, which is based on Arch Linux.

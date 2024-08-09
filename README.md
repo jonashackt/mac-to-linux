@@ -931,6 +931,38 @@ fc -R .zhistory
 * Show Hidden `.` files in home dir: `Strg - H`
 
 
+## Switch & install more Icon Themes in Gnome (for file manager Nautilus & the Dock)
+
+The default icon theme on Manjaro for Gnome is kind of a default greenish folder and icon look.
+
+You can change the icon theme in the Gnome Tweaks App (search for `Tweaks` after pressing the super key).
+
+And you can even install more icon themes through the package manager. Just search for `icon-theme` there:
+
+![](docs/gnome-icon-themes.png)
+
+Or you can have a look at the Gnome looks website: https://www.gnome-look.org/browse?cat=132&ord=latest or use the Pling store https://www.pling.com/p/1972991/
+
+I found this https://github.com/vinceliuice/Colloid-icon-theme a great theme for example. Install it via:
+
+```shell
+pamac install colloid-icon-theme-git
+```
+
+![](docs/icon-theme-colloid.png)
+
+Or the Qogir theme is also nice: https://www.pling.com/p/1296407
+
+```shell
+pamac install qogir-icon-theme
+```
+
+The Qogir Manjaro theme looks really nice:
+
+![](docs/icon-theme-qogir-manjaro.png)
+
+
+
 ## Zoom text in gedit
 
 https://askubuntu.com/questions/108967/how-to-zoom-in-and-out-of-text-in-gedit

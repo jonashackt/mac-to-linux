@@ -865,6 +865,8 @@ But nevertheless don't use plain RDP over the internet without VPN etc.!
 
 This is super cool: So just enter the system settings menu, click on `System` and `Remote Desktop`. In the tab `Desktop Sharing` activate the slider also named `Desktop Sharing` and `Remote Control` on the machine you want to connect to.
 
+> You could also use the `Remote Login` tab and configure this. With that way you can create your own login session from the RDP client and define things like display resolution etc. The downside is: You can't also be logged in at the same time on your home server (which might be an issue, if you want to use your home server for home cinema also... like me)
+
 Now on the client machine you need an RDP client. There are many around, like remmina https://software.manjaro.org/package/remmina#! 
 
 Install it via:

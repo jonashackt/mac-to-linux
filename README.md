@@ -865,13 +865,19 @@ But nevertheless don't use plain RDP over the internet without VPN etc.!
 
 This is super cool: So just enter the system settings menu, click on `System` and `Remote Desktop`. In the tab `Desktop Sharing` activate the slider also named `Desktop Sharing` and `Remote Control` on the machine you want to connect to.
 
-Now on the client machine you need an RDP client. There are many around, like remmina https://software.manjaro.org/package/remmina#! etc.
+Now on the client machine you need an RDP client. There are many around, like remmina https://software.manjaro.org/package/remmina#! 
 
-But there's already a great RDP client installed on Manjaro/Gnome: Connections https://apps.gnome.org/en/Connections/
+Install it via:
+
+```shell
+pamac install remmina
+```
 
 I tried Connections and used my basement machines local network IP and the credentials from the Gnome Sharing menu (or your Tailscale host name :) ). Also use the user and password provided in the settings. And it worked like a charm:
 
-![](docs/gnome-connections-rdp-client.png)
+![](docs/remmina-rdp-client.png)
+
+Just be sure to change the display resolution of your remmina connection. Because for me the machine started with a old old old school 640x480 (which Gnome is able to use, but it's not really useful). See this cumbersome steps https://superuser.com/a/1569780/497608 - but they work!
 
 
 

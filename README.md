@@ -755,6 +755,11 @@ Thats the [only Spotify client for Linux](https://www.spotify.com/de/download/li
 
 The most used mail client on Linux is undoubtly Thunderbird. Install it simply via pamac.
 
+### Zoom Thunderbird UI
+
+If you have a very high display resolution like me and want to get bigger icons and better readability, have a look at the burger menu and experiment with `Density` and `Font Size`.
+
+
 ### Tweak Thunderbird Search: Quick Filters!
 
 Using the search bar on top of Thunderbird seems to be a no-brainer. But I regularly found myself beeing overwhelmed by the default results page - thus clicking on `Show results as list` everytime I used the search bar... Which led my Thunderbird becoming a mess soon with lots of tabs:
@@ -766,6 +771,17 @@ Because of this I wondered if one can configure Thunderbird to use the `Show res
 ![](docs/thunderbird-quick-filters.png)
 
 Finally via `View/Toolbars/Toolbar Layout` you can even remove the Thunderbird Search bar at the top - because everything you need are Quick Filters now :)
+
+
+### Thunderbird Freezes with high CPU load
+
+If Thunderbird freezes with a high load of CPU for sometimes minutes, [your Thunderbird profile is maybe broken](https://www.adviksoft.com/blog/why-thunderbird-freezes-when-receiving-email/).
+
+Try to create a new Profile as described here https://support.mozilla.org/en-US/kb/profile-manager-create-and-remove-thunderbird-profiles
+
+And [start Thunderbird from the commandline via `thunderbird` as described here](https://forum.manjaro.org/t/thunderbird-freezes-immediately-after-start/154005), to see errors. 
+
+A new profile should fix the problem.
 
 
 

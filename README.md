@@ -251,6 +251,46 @@ Now you should be able to login to your desktop using your finger! Really nice :
 
 If that doesn't work OOTB, maybe have a look at https://blog.rubenwardy.com/2022/11/16/thinkpad-x1-fingerprint-auth/
 
+## Use Fingerprint for pamac also
+
+As I use a Thinkpad with Gnome for the desktop login and sudo worked OOTB, but sadly not for pamac:
+
+In [the Arch docs](https://wiki.archlinux.org/title/Fprint#Login_configuration) it is stated to alter (and first create/copy) the `/etc/pam.d/polkit-1` file in order [that pamac will pick up the Fingerprint registered via Gnome / fprintd](https://forum.manjaro.org/t/configuring-pam-d-files/169594/6).
+
+But in order [to be also able to use a password in graphical user interfaces](https://wiki.archlinux.org/title/Fprint#Login_configuration), we should use `pam-fprint-grosshack` here:
+
+> If you want to prompt for fingerprint and password input at the same time, you can use pam-fprint-grosshackAUR. 
+
+```shell
+pamac install pam-fprint-grosshack
+``` 
+
+```shell
+# Check if /etc/pam.d/polkit-1 is present on your system (on my it wasn't)
+# if not present, copy it over from /usr/lib/pam.d/polkit-1
+sudo cp /usr/lib/pam.d/polkit-1 /etc/pam.d/polkit-1
+
+# now add the following lines to the top of the file /etc/pam.d/polkit-1 e.g. via nano:
+auth		sufficient  	pam_fprintd_grosshack.so
+auth		sufficient  	pam_unix.so try_first_pass nullok
+...
+```
+
+That already does the trick! Now `pamac` will be also using the fingerprint sensor like this:
+
+```shell
+pamac update
+Preparing...
+==== AUTHENTICATING FOR org.manjaro.pamac.commit ====
+Authentication is required to install, update, or remove packages
+Authenticating as: Jonas Hecht (jonashackt)
+Enter Password or Place finger on fingerprint reader: 
+==== AUTHENTICATION COMPLETE ====
+Synchronizing package databases...
+...
+```
+
+The only "drawback" here is that you need to press `ENTER` after you placed your finger on the fingerprint reader :) 
 
 
 # Backup Manjaro package list and reinstall on other machine

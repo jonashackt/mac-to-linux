@@ -1,4 +1,4 @@
-# Virtualized Windows & MacOS on Linux
+# 03 Virtualized Windows & MacOS on Linux
 
 This section covers using Windows and MacOS on Linux.
 

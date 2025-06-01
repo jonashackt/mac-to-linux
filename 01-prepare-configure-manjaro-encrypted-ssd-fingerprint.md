@@ -1,4 +1,4 @@
-# Prepare, install & configure Manjaro Linux
+# 01 Prepare, install & configure Manjaro Linux
 
 This section contains steps to 
 

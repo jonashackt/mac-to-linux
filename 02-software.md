@@ -1,4 +1,4 @@
-# Productivity Software on Linux
+# 02 Productivity Software on Linux
 
 This section contains how-to-install & configure software I use (or need to use for work):
 

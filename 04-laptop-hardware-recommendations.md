@@ -1,4 +1,4 @@
-# Hardware recommendations
+# 04 Hardware recommendations
 
 This section contains details on how to find a good Laptop to run Linux on. And how to configure a Thinkpad in detail:
 

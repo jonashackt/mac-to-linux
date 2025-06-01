@@ -1,4 +1,4 @@
-# AI on Linux
+# 05 AI on Linux
 
 This section covers docs about AI on Linux.
 

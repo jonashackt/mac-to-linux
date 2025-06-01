@@ -5,7 +5,7 @@ Docs on me leaving my Apple/Mac(book) in favour of a Linux machine
 
 These docs are separated into sections, which contain specific information:
 
-## [00 # Why going from Mac to Linux?](00-why-leave-mac-distro-choice.md)
+## [00 Why going from Mac to Linux?](00-why-leave-mac-distro-choice.md)
 
 Why should anybody want to leave the Apple cosmos in favour of Linux? And if, which Distro should you choose?
 

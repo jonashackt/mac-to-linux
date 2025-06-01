@@ -36,12 +36,12 @@ This section contains how-to-install & configure software I use (or need to use 
 * Balsamic Mockups on Linux with Bottles
 
 
-# [03 Virtualized Windows & MacOS on Linux](03-virtualization-windows-macos.md)
+## [03 Virtualized Windows & MacOS on Linux](03-virtualization-windows-macos.md)
 
 This section covers using Windows and MacOS on Linux.
 
 
-# [04 Hardware recommendations](04-laptop-hardware-recommendations.md)
+## [04 Hardware recommendations](04-laptop-hardware-recommendations.md)
 
 This section contains details on how to find a good Laptop to run Linux on. And how to configure a Thinkpad in detail:
 
@@ -54,7 +54,7 @@ This section contains details on how to find a good Laptop to run Linux on. And 
   * Thinkpads: thinkfan
 
 
-# [05 AI on Linux](05-ai-on-linux.md)
+## [05 AI on Linux](05-ai-on-linux.md)
 
 This section covers docs about AI on Linux.
 

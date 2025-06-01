@@ -11,6 +11,7 @@ This section contains how-to-install & configure software I use (or need to use 
 * VSCode & Tiling Terminal
 * Printer Setup
 * Balsamic Mockups on Linux with Bottles
+* Sync Obsidian between machines with Syncthing
 
 
 ## Docker
@@ -340,7 +341,36 @@ And
 
 But nevertheless don't use plain RDP over the internet without VPN etc.!
 
+There are 2 distince methods how to use Remote Desktop in Gnome:
+
+
+1. Desktop Sharing:
+
+    Enables remote users to view and potentially control the desktop of a local user who is already logged in.
+    The remote user connects to the existing session, and their actions (like mouse movements) are visible on the shared screen.
+    It's a screen-sharing session, meaning the remote user is effectively observing and potentially interacting with the local user's session
+
+
+2. Remote Login:
+
+    Allows a remote user to log in to their own user account on the machine, even if no one is logged in locally.
+    Creates a new, independent session, as if the user were logging in directly at the machine's physical keyboard.
+    This feature is useful for situations where you need to access your computer remotely, even if it's been restarted or locked. 
+    --> If you use the same user for local login and interaction with Remote Login, the local user session will be logged out!
+
+
+### 1. Desktop/user session sharing
+
 This is super cool: So just enter the system settings menu, click on `Sharing` and activate `Remote Desktop` and `Remote Control` on the machine you want to connect to.
+
+
+### 2. Remote Login using a separate user
+
+First on the machine you want to connect to (e.g. your homeserver (as described here https://github.com/jonashackt/homeserver)), go to the Gnome Settings, then `System`/`Users` and click on `Add User`. Now create a new distinct user for the Remote login. If you want to do administrative stuff, you should give the user the `Administrative` type and set the password right now.
+
+Now setup Remote Login in Settings `System/Remote Desktop`  in the tab `Remote Login` using the button behind `Remote Login`. Also under `Login Details` set the username and password of the newly created user. 
+
+### RDP Client
 
 Now on the client machine you need an RDP client. There are many around, like remmina https://software.manjaro.org/package/remmina#! or Thincast https://thincast.com/en . I tried Thincast and used my basement machines local network IP and the credentials from the Gnome Sharing menu. And it worked like a charm:
 
@@ -348,6 +378,7 @@ Now on the client machine you need an RDP client. There are many around, like re
 
 In Thincast the option `View / Smart Sizing` comes in very helpful, if the screens of Client and Server do have different resolutions.
 
+Depending on the RDP methods you used with the 2. method your local user session should not be logged out :)
 
 
 
@@ -584,6 +615,13 @@ drwxr-xr-x 21 jonashackt jonashackt  4096  4. Jan 19:49  windows
 ```
 
 
+## Sync Obsidian between machines with Syncthing
+
+Imagine you want to use Obsidian for notes management without Google Drive / Dropbox reliance [to sync your notes](https://help.obsidian.md/sync-notes) (e.g. from your Linux machine to your De-Googled Phone based on CalyxOS (as described here https://github.com/jonashackt/calyxos)) There's a great tool called Syncthing - here's [how to install & configure it](https://docs.syncthing.net/intro/getting-started.html):
+
+```shell
+pamac install syncthing
+```
 
 # Links
 

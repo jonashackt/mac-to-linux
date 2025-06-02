@@ -617,9 +617,13 @@ drwxr-xr-x 21 jonashackt jonashackt  4096  4. Jan 19:49  windows
 
 ## Sync files between machines with Syncthing (like Dropbox, but private)
 
-### Between your Linux laptop & your server (e.g. homeserver)
+### Between your Linux laptop & your server (e.g. homeserver) in the same local network
 
-There's a great tool called Syncthing - here's [how to install & configure it](https://docs.syncthing.net/intro/getting-started.html) - e.g. on your homeserver:
+There's a great tool called Syncthing.
+
+> "Syncthing works best when at least one device is always on to ensure continuous syncing." In order to have a machine that's always on, here are the docs on how to build and setup your own fan-less homeserver.
+
+Here's [how to install & configure it](https://docs.syncthing.net/intro/getting-started.html) - e.g. on your homeserver:
 
 ```shell
 pamac install syncthing
@@ -646,6 +650,29 @@ Now place a new file into your folder in sync - and it should magically appear o
 ![](docs/syncthing-first-file-sync.png)
 
 
+### Between your Linux laptop & your server (e.g. homeserver) via Tailscale
+
+Now syncing between your devices in the same local network is cool, but we want the "real" Dropbox like experience. So why not use TailScale for that, as I already configured in https://github.com/jonashackt/firefly-iii-ops?tab=readme-ov-file#make-your-homeserver-available-on-the-internet-for-later-app-access
+
+With Tailscale all your devices will be accessible regardless where they are located on earth :) Now to use Syncthing together with Tailscale, we need to: 
+
+1. Get Tailscale host name + magic dns + port for every device:
+Each device connected to Tailscale will be assigned a Tailscale host name + magic dns + port in the form `hostname.magic-dns-name.net` within the Tailscale network.
+
+Therefore have a look into the tailscale webinterface at https://login.tailscale.com/admin/machines under `Machine Details` of every connected device.
+
+2. Edit your Remote Devices to support Tailscale hostname + magic dns + port instead of dynamic discovery.
+This can be done in every Remote Devices `Advanced` options under `edit device`. In the `Adresses` field enter the Tailscale host name + magic dns + port in this format (where `22000` is the default port)
+
+`tcp://hostname.magic-dns-name.net:22000`
+
+3. Repeat for all devices:
+Repeat this process on each Syncthing instance, adding the other device's Tailscale hostname + magic dns + port as a remote device. 
+
+If you're using the Android Syncthing Fork App, use the Web UI to configure this Advanced Option (see next paragraph).
+
+
+
 ### Add your Android phone (e.g. on CalyxOS) to the Syncthing devices
 
 > See https://github.com/jonashackt/calyxos for instructions to create a De-Googled phone
@@ -665,6 +692,16 @@ The last step is to accept the sharing of the `Default Folder` of your other mac
 ### Sync Obsidian between machines with Syncthing
 
 Imagine you want to use Obsidian for notes management without Google Drive / Dropbox reliance [to sync your notes](https://help.obsidian.md/sync-notes) (e.g. from your Linux machine to your De-Googled Phone based on CalyxOS (as described here https://github.com/jonashackt/calyxos))
+
+To be able to sync your Obsidian Vault using Syncthing, first try to locate your Obsidian Vault on Android. To find the location of your vault, you need to tap on the menu icon in the top left and click on your vaults name. Now a pop up should show up and present `Manage vaults...`. Now click on your created vault again and there should be a `This vault is located at /storage/emulated/0/xyz` under your vault's name. This is the folder we want to sync using the already setup Syncthing.
+
+As the docs state:
+
+On all devices:
+
+    Open Syncthing and create a shared folder. Set the folder path to your Obsidian vault.
+    Ensure the same folder is selected on all devices.
+    Configure folder syncing preferences (e.g., Send & Receive for bidirectional syncing).
 
 
 

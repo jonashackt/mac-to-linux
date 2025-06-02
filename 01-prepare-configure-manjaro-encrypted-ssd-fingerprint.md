@@ -7,6 +7,7 @@ This section contains steps to
 * Alternative to self-encrypting SSDs: full software-based file-system encryption with LUKS
 * Enable AUR & Flatpack
 * Fingerprint for Gnome & sudo
+* UEFI/BIOS updates with fwupd & gnome-firmware
 * Backup with restic/resticprofile
 * Firewall configuration
 * HiDPI Scaling
@@ -47,9 +48,9 @@ https://www.reddit.com/r/thinkpad/comments/a212wx/comment/eaui7eb/?utm_source=sh
 
 > The drive is always encrypted by default. But there is no password, and as such the data is available to everyone that has physical access to the drive. Once a password is set in the bios (hd password) you will need to type it every time you do a clean boot (not at restart). You cannot access the data now unless the password is used. Even if you take the drive to another computer unless you have the password you cannot access the data. [...] I find it quite convenient, all you need is a swipe of your finger at boot. 
 
-To register your fingerprints, you sadly need to have a Windows install before the Linux installation in order to be able to use your fingerprint to unlock you device:
+__To register your fingerprints, you sadly need to have a Windows install before the Linux installation__ in order to be able to use your fingerprint to unlock you device:
 
-> Because the password is required before the OS boots it is completely OS independent. Saves any configuration required to boot from encrypted drives in Linux etc. And yes you get fingerprint to unlock it. Just remember fingerprint registration requires windows so before you format and install linux, use windows to register your fingerprints, the format. 
+> Because the password is required before the OS boots it is completely OS independent. Saves any configuration required to boot from encrypted drives in Linux etc. And yes you get fingerprint to unlock it. Just remember fingerprint registration requires Windows so before you format and install linux, use windows to register your fingerprints, then format. 
 
 
 #### Dual Boot with Windows for Thinkpad Fingerprint Reader
@@ -222,6 +223,21 @@ Now you should be able to login to your desktop using your finger! Really nice :
 
 
 If that doesn't work OOTB, maybe have a look at https://blog.rubenwardy.com/2022/11/16/thinkpad-x1-fingerprint-auth/
+
+
+
+# UEFI/BIOS updates with fwupd & gnome-firmware
+
+I stumbled on this:
+
+> [In August of 2018 Lenovo has joined the Linux Vendor Firmware Service (LVFS) project](https://blogs.gnome.org/hughsie/2018/08/06/please-welcome-lenovo-to-the-lvfs/), which enables firmware updates from within the OS.
+
+Wow, so with the [fwupd project](https://wiki.archlinux.org/title/Fwupd) we can update our firmware/UEFI/BIOS from within Linux - no more Lenovo Vantage needed! You can look up your model at https://fwupd.org - I did this for my Thinkpad P1 Gen 6 and voila https://fwupd.org/lvfs/search?csrf_token=ImE5OTRjMWIzNzVhMzZmMjJkZTNhZDIwNjIxYmQ3M2NmNDFjYjU1ODIi.aD1UdQ.5LzvjNRE-KA2LrzJExAOQuf6fmk&value=thinkpad+p1+gen+6
+
+There's even [a Gnome UI for fwupd](https://archlinux.org/packages/extra/x86_64/gnome-firmware/) - and it's pre-installed on Manjaro. Simply press the Action key and type `firmware`:
+
+![](docs/gnome-firmware.png)
+
 
 
 

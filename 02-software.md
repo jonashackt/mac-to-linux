@@ -615,13 +615,58 @@ drwxr-xr-x 21 jonashackt jonashackt  4096  4. Jan 19:49  windows
 ```
 
 
-## Sync Obsidian between machines with Syncthing
+## Sync files between machines with Syncthing (like Dropbox, but private)
 
-Imagine you want to use Obsidian for notes management without Google Drive / Dropbox reliance [to sync your notes](https://help.obsidian.md/sync-notes) (e.g. from your Linux machine to your De-Googled Phone based on CalyxOS (as described here https://github.com/jonashackt/calyxos)) There's a great tool called Syncthing - here's [how to install & configure it](https://docs.syncthing.net/intro/getting-started.html):
+### Between your Linux laptop & your server (e.g. homeserver)
+
+There's a great tool called Syncthing - here's [how to install & configure it](https://docs.syncthing.net/intro/getting-started.html) - e.g. on your homeserver:
 
 ```shell
 pamac install syncthing
 ```
+
+Now execute `syncthing` from the command line:
+
+```shell
+syncthing
+```
+
+Your Browser should open up and show the Syncthing admin gui:
+
+![](docs/syncthing-first-startup.png)
+
+Install and start Syncthing also on another machine, like your Linux Laptop. Now as the docs state:
+
+> To get your two devices to talk to each other click “Add Remote Device” at the bottom right on both devices, and enter the device ID of the other side (you can see it in the web GUI by selecting “Actions” (top right) and “Show ID”). You should also select the folder(s) that you want to share. The device name is optional and purely cosmetic. You can change it later if desired.
+
+Do this on all machines you want to connect. You should be promted on the other machines, if you really want to share the defined folder (I just choosed the Default Folder `HOME/Sync` to be shared).
+
+Now place a new file into your folder in sync - and it should magically appear on your other device like this:
+
+![](docs/syncthing-first-file-sync.png)
+
+
+### Add your Android phone (e.g. on CalyxOS) to the Syncthing devices
+
+> See https://github.com/jonashackt/calyxos for instructions to create a De-Googled phone
+
+The original Syncthing App for Android [was discontinued for some reasons](https://www.reddit.com/r/Syncthing/comments/1g7zpvm/syncthing_android_app_discontinued/) 
+
+But there's an alternative fork, that is beeing published to the release channel on F-Droid https://github.com/Catfriend1/syncthing-android - as described there I would not advice to use the PlayStore / Aurora Store version, since it's not published by the maintainer and it's not the most up-to-date version. Simply use F-Droid.
+
+To connect to your Syncthing network, add the Device ID (from the burger menu in the app) to the other machines - and the ids of the other machines to your Syncthing Fork Android app. The devices should then all list themselves, if everything went fine.
+
+The last step is to accept the sharing of the `Default Folder` of your other machines on your Android device. Therefore head over to `Web UI` in the burger menu of the App and accept the folder to sync. Now you should be asked to add the folder and on which path this will be saved (I used `~` for that, this uses the provided path in the app). Then accept every other folder sync from other devices. Now all files in the `Default Folder` should also be synced to your Android phone:
+
+![](docs/syncthing-fork-android-app-file-synced.png)
+
+
+
+### Sync Obsidian between machines with Syncthing
+
+Imagine you want to use Obsidian for notes management without Google Drive / Dropbox reliance [to sync your notes](https://help.obsidian.md/sync-notes) (e.g. from your Linux machine to your De-Googled Phone based on CalyxOS (as described here https://github.com/jonashackt/calyxos))
+
+
 
 # Links
 

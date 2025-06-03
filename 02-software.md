@@ -617,8 +617,6 @@ drwxr-xr-x 21 jonashackt jonashackt  4096  4. Jan 19:49  windows
 
 ## Sync files between machines with Syncthing (like Dropbox, but private)
 
-### Between your Linux laptop & your server (e.g. homeserver) in the same local network
-
 There's a great tool called Syncthing.
 
 > "Syncthing works best when at least one device is always on to ensure continuous syncing." In order to have a machine that's always on, here are the docs on how to build and setup your own fan-less homeserver.
@@ -629,17 +627,69 @@ Here's [how to install & configure it](https://docs.syncthing.net/intro/getting-
 pamac install syncthing
 ```
 
-Now execute `syncthing` from the command line:
+Since we want to have Syncthing to automatically start when we boot our machine, we should create a System service for it - see https://docs.syncthing.net/users/autostart
+
+On many distributions [this will be `systemd` today](https://docs.syncthing.net/users/autostart#using-systemd).
+
+> To understand the difference between systemd system and user services, have a look at https://superuser.com/questions/393423/the-symbol-and-systemctl-and-vsftpd (the `@` defined Unit files refer to the system services)
+
+
+
+### (auto)Start Syncthing via systemd user service on Linux Laptop
+
+If you want Syncthing to be automatically started on your Laptop, you most likely want to start it as a user service (which does not run regardless of logged in users): https://docs.syncthing.net/users/autostart#how-to-set-up-a-user-service
+
+> "Thus, the user service is intended to be used on a (multiuser) desktop computer. It avoids unnecessarily running Syncthing instances."
+
+> Service files for systemd are provided by Syncthing (on Arch/Manjaro there's a `syncthing.service` file present in `~/.config/systemd/user/default.target.wants` after the pamac install ran)
+
+So simply run:
 
 ```shell
-syncthing
+systemctl --user enable syncthing.service
+systemctl --user start syncthing.service
 ```
 
-Your Browser should open up and show the Syncthing admin gui:
+To check the status run:
+
+```shell
+systemctl --user status syncthing.service
+``` 
+
+Or check your Browser at http://127.0.0.1:8384/ which should show the Syncthing admin gui:
 
 ![](docs/syncthing-first-startup.png)
 
-Install and start Syncthing also on another machine, like your Linux Laptop. Now as the docs state:
+
+
+### (auto)Start Syncthing via systemd system service on Linux Server
+
+https://docs.syncthing.net/users/autostart#how-to-set-up-a-system-service
+
+> "Running Syncthing as a system service ensures that Syncthing is run at startup even if the Syncthing user has no active session. Since the system service keeps Syncthing running even without an active user session, it is intended to be used on a server."
+
+> Service files for systemd are provided by Syncthing (on Arch/Manjaro there's a `syncthing@.service` file present in `/usr/lib/systemd/system` after the pamac install ran)
+
+So simply run (replace `myuser` with a actual username):
+
+```shell
+systemctl enable syncthing@myuser.service
+systemctl start syncthing@myuser.service
+``` 
+
+To check the status run (replace `myuser` again):
+
+```shell
+systemctl status syncthing@myuser.service
+``` 
+
+Or check your Browser at http://127.0.0.1:8384/ which should show the Syncthing admin gui:
+
+![](docs/syncthing-first-startup.png)
+
+
+
+### Get Syncthing to sync a Folder between Laptop and Server 
 
 > To get your two devices to talk to each other click “Add Remote Device” at the bottom right on both devices, and enter the device ID of the other side (you can see it in the web GUI by selecting “Actions” (top right) and “Show ID”). You should also select the folder(s) that you want to share. The device name is optional and purely cosmetic. You can change it later if desired.
 
@@ -650,7 +700,8 @@ Now place a new file into your folder in sync - and it should magically appear o
 ![](docs/syncthing-first-file-sync.png)
 
 
-### Between your Linux laptop & your server (e.g. homeserver) via Tailscale
+
+### Sync between Laptop & Server via Tailscale
 
 Now syncing between your devices in the same local network is cool, but we want the "real" Dropbox like experience. So why not use TailScale for that, as I already configured in https://github.com/jonashackt/firefly-iii-ops?tab=readme-ov-file#make-your-homeserver-available-on-the-internet-for-later-app-access
 
@@ -683,7 +734,11 @@ But there's an alternative fork, that is beeing published to the release channel
 
 To connect to your Syncthing network, add the Device ID (from the burger menu in the app) to the other machines - and the ids of the other machines to your Syncthing Fork Android app. The devices should then all list themselves, if everything went fine.
 
-The last step is to accept the sharing of the `Default Folder` of your other machines on your Android device. Therefore head over to `Web UI` in the burger menu of the App and accept the folder to sync. Now you should be asked to add the folder and on which path this will be saved (I used `~` for that, this uses the provided path in the app). Then accept every other folder sync from other devices. Now all files in the `Default Folder` should also be synced to your Android phone:
+The last step is to accept the sharing of the `Default Folder` of your other machines on your Android device. 
+
+> __Therefore head over to `Web UI` in the burger menu of the App and accept the folder to sync.__
+
+Now you should be asked to add the folder and on which path this will be saved (I used `~` for that, this uses the provided path in the app). Then accept every other folder sync from other devices. Now all files in the `Default Folder` should also be synced to your Android phone:
 
 ![](docs/syncthing-fork-android-app-file-synced.png)
 

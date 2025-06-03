@@ -619,7 +619,7 @@ drwxr-xr-x 21 jonashackt jonashackt  4096  4. Jan 19:49  windows
 
 There's a great tool called Syncthing.
 
-> "Syncthing works best when at least one device is always on to ensure continuous syncing." In order to have a machine that's always on, here are the docs on how to build and setup your own fan-less homeserver.
+> "Syncthing works best when at least one device is always on to ensure continuous syncing." In order to have a machine that's always on, here are the docs on how to build and setup your own fan-less homeserver (as described here https://github.com/jonashackt/homeserver).
 
 Here's [how to install & configure it](https://docs.syncthing.net/intro/getting-started.html) - e.g. on your homeserver:
 
@@ -700,6 +700,22 @@ Now place a new file into your folder in sync - and it should magically appear o
 ![](docs/syncthing-first-file-sync.png)
 
 
+### Syncthing Tray
+
+As with Dropbox we'd like to have a tray icon running for Syncthing. Luckily there's https://github.com/Martchus/syncthingtray
+
+Simply install it via
+
+```shell
+pamac install syncthingtray
+``` 
+
+Then start it and configure it using the local Syncthing url path and the `API Key` you can copy from the Syncthing web ui under `Actions/Settings`:
+
+![](docs/syncthingtray-configuration.png)
+
+
+
 
 ### Sync between Laptop & Server via Tailscale
 
@@ -750,13 +766,9 @@ Imagine you want to use Obsidian for notes management without Google Drive / Dro
 
 To be able to sync your Obsidian Vault using Syncthing, first try to locate your Obsidian Vault on Android. To find the location of your vault, you need to tap on the menu icon in the top left and click on your vaults name. Now a pop up should show up and present `Manage vaults...`. Now click on your created vault again and there should be a `This vault is located at /storage/emulated/0/xyz` under your vault's name. This is the folder we want to sync using the already setup Syncthing.
 
-As the docs state:
+Simply copy the Obsidian vault folder to your Syncthing Default Folder created earlier. Now open a new Obisidian vault from this exact folder location and delete the old one.
 
-On all devices:
-
-    Open Syncthing and create a shared folder. Set the folder path to your Obsidian vault.
-    Ensure the same folder is selected on all devices.
-    Configure folder syncing preferences (e.g., Send & Receive for bidirectional syncing).
+On your Desktop devices you can do the same. That's it, now your Obsidian notes are in sync on all your devices!
 
 
 

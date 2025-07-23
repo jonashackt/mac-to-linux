@@ -25,6 +25,8 @@ But maybe there's help & there is a way to add an already existant VirtualBox `.
 
 Download a pre-packaged VirtualBox `.ova` here https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/ which already includes an evaluation version of Windows 11. The link should download the VirtualBox `.zip` file (22gigs will take their time depending on your Internet speed).
 
+> As of July 2025 the downloads of the VirtualBox prepackaged `.ova`s is "temporarily unavailable", so you may need to start with an ISO from https://www.microsoft.com/de-de/evalcenter/download-windows-11-enterprise or use https://github.com/massgravel/Microsoft-Activation-Scripts
+
 
 ### Import .ova into VirtualBox
 

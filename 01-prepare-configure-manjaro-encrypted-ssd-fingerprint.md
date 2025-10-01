@@ -26,7 +26,7 @@ Although [you could implement Secure Boot with Linux](https://wiki.archlinux.org
 
 ## HDD Encryption
 
-If you're working for a company chances are that you have will have to use encryption with your harddrive.
+If you're working for a company chances are that you will have to use encryption with your harddrive.
 
 You can either use a self-encrypting SSD or encryt the whole file system (or folders). The Arch docs have direct us into the first solution if possible, since the latter can become quite complex (although supported by Manjaro installer).
 

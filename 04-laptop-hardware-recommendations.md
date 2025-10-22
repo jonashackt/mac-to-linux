@@ -224,6 +224,10 @@ https://gitlab.freedesktop.org/upower/power-profiles-daemon
 
 After using auto-cpufreq for 1,5 years now, I finally switched over to power-profiles-deamon, since my battery life wasn't good at all.
 
+Now I also have the power mode displayed in my Gnome settings, where you can switch between `Performance`, `Balanced` and `Power Saver`:
+
+![](docs/powermode-gnome-settings.png)
+
 ## auto-cpufreq
 
 In some deep subreddit thread I found: https://github.com/AdnanHodzic/auto-cpufreq

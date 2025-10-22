@@ -208,14 +208,23 @@ pamac install thinkfan-ui
 Also you can override the fan speed levels yourself and get your machine silent for some time (but be aware, that it might overheat without further tooling and configuration!)-
 
 
-## TBD: Power PRofiles Daemon
+# Getting your laptop silent: Focus on battery-life (power-profiles-daemon) or performance (auto-cpufreq)?
+
+There are mainly 2 competing tools when it comes to optimizing your laptop's battery life and power consumption: auto-cpufreq & power-profiles-daemon
+
+https://www.reddit.com/r/Fedora/comments/1cgf5oh/powerprofilesdaemon_vs_autocpufreq_battery_life/
+
+"auto-cpufreq is a more aggressive, performance-focused tool that automatically adjusts CPU frequency based on load, while power-profiles-daemon is a system-level service that provides user-selectable profiles (power-saver, balanced, performance) and integrates with desktop environments like GNOME. "
+
+## power-profiles-daemon
 
 https://www.notebookcheck.com/Ubuntu-24-04-LTS-soll-die-Energie-Effizienz-der-Linux-Distribution-auf-Laptops-verbessern.824159.0.html
 
 https://gitlab.freedesktop.org/upower/power-profiles-daemon
 
+After using auto-cpufreq for 1,5 years now, I finally switched over to power-profiles-deamon, since my battery life wasn't good at all.
 
-## Getting your laptop silent: auto-cpufreq
+## auto-cpufreq
 
 In some deep subreddit thread I found: https://github.com/AdnanHodzic/auto-cpufreq
 

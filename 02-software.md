@@ -552,6 +552,18 @@ As a side note: If you want to use the open source drivers and need to configure
 Also the CUPS system itself is a very good source of information http://localhost:631/help/network.html
 
 
+### Epson Workforce Pro WF-C579RB
+
+Search for the aur, found https://gist.github.com/progzone122/0b4e2a85ea44d0dc1e74fc16ee4d9700 and that Epson recently released Linux drivers for their printers :) 
+
+There is https://aur.archlinux.org/packages/epson-inkjet-printer-escpr (more popular) and https://aur.archlinux.org/packages/epson-inkjet-printer-escpr2
+
+Install with
+
+```shell
+pamac install epson-inkjet-printer-escpr-bin
+``` 
+
 
 ## Balsamiq Mockups on Linux
 

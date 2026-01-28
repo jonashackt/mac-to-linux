@@ -538,7 +538,11 @@ sudo ufw enable
 
 https://wiki.archlinux.org/title/HiDPI
 
-As per default you only have 100% steps to scale your display. But there's an experimental feature called fractional scaling in Gnome, which you can activate:
+As per default you only have 100% steps to scale your display. 
+
+## back when fractional scaling was experimental
+
+But there's an experimental feature called fractional scaling in Gnome, which you can activate:
 
 https://www.dedoimedo.com/computers/gnome-hd-scaling.html
 
@@ -547,9 +551,18 @@ I didn't really like it, since it kind of "blurrs" the screen. My solution: In-p
 With my 2560 x 1600 I use a combination of Browser scaling (Firefox default zoom), IDE scaling (VS Code `Strg +`) and higher Font scaling factor (`1.25`) in the GNOME Tweaks menu (you can reach that via `Manjaro Hello`).
 
 
+## Now fractional scaling seems to work pretty well
+
+Coming back to the topic after a long time, [I revisited the fractional scaling with Gnome 49](https://www.reddit.com/r/gnome/comments/1hg7tdg/gnome_fractional_scaling_status/), activated on the command line via:
+
+```shell
+gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuffer']"
+```
+
+And using in in the Gnome settings under `Displays/Scale`. I use 125% for my 2560 x 1600 Thinkpad and damn, it looks really good! 
 
 
-## Use Multitouch gestures in Gnome with Nvidia drivers and X11
+# Use Multitouch gestures in Gnome with Nvidia drivers and X11
 
 https://forum.manjaro.org/t/how-to-enable-wayland-touch-gestures-on-x11/141723
 

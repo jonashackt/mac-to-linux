@@ -552,17 +552,64 @@ As a side note: If you want to use the open source drivers and need to configure
 Also the CUPS system itself is a very good source of information http://localhost:631/help/network.html
 
 
-### Epson Workforce Pro WF-C579RB
+### Epson ET-4800
 
-Search for the aur, found https://gist.github.com/progzone122/0b4e2a85ea44d0dc1e74fc16ee4d9700 and that Epson recently released Linux drivers for their printers :) 
+After my Canon Pixma died, I did a bit of research. Canon doesn't seem to really care about Linux users, so the drivers are old (2023ish for 2026 printers) and don't seem to be maintained.
 
-There is https://aur.archlinux.org/packages/epson-inkjet-printer-escpr (more popular) and https://aur.archlinux.org/packages/epson-inkjet-printer-escpr2
+In search for a cheap TOC alternative for printing I generally found the category of "ink tank printers", where you can refill the cartridges easily and affordable.
 
-Install with
+And searching for these kind of printers I found out that Epson seems to have a great overall Linux support!
+
+* There is a general landing page for Linux users https://epson.com/Support/wa00821
+* Reddit is full of love https://www.reddit.com/r/Epson/comments/1e690jk/credit_to_epson_for_their_inkjet_printer_drivers/
+* before buying, search for the model here https://download-center.epson.com/search/?region=DE&language=en and you'll find out, if there are current drivers listed (which should be the case with many models)
+* also the Scanning software is provided (https://aur.archlinux.org/packages/epsonscan2)
+* and a printing utility is also available (https://aur.archlinux.org/packages/epson-printer-utility)
+
+#### Steps to install the Epson ET-4800
+
+First I needed to revert the printer settings to factory settings - otherwise the already attached ethernet cable didn't seem to make the LAN working. But after the factory reset, my router found the printer and I was able to access the printers settings page via it't network local IP adress at https://192.168.178.107/ (I found this address inside my router - we'll need that later).
+
+Now I installed the Epson Linux printer package (https://support.epson.net/linux/Printer/LSB_distribution_pages/en/escpr.php) via (including the scan software):
+
+> There's a trap here. There are 2 main driver packages for Epson Linux drivers: 
+* `epson-inkjet-printer-escpr2` should be for newer models and supports advanced features (but ships with a proprietary binary inside): https://aur.archlinux.org/packages/epson-inkjet-printer-escpr2
+* __only one that worked for me:__ `epson-inkjet-printer-escpr` seems to be for older models, but has the correct driver for my ET-4800! This is the only one that worked for me (and is also fully open source) https://aur.archlinux.org/packages/epson-inkjet-printer-escpr
+* `epson-inkjet-printer-escpr-bin` isn't available anymore and didn't work either
 
 ```shell
-pamac install epson-inkjet-printer-escpr-bin
-``` 
+pamac install epson-inkjet-printer-escpr epsonscan2
+```
+
+Now using Gnomes's "Add printer" page didn't work as expected, so I used the CUPS ui I got to know using my old Canon (which is much more comfortable then the CUPS webui). Fire it up from the command line via:
+
+```shell
+system-config-printer
+```
+
+Now authenticate yourself at `unlock` and then use the `Add` button to add a new printer. In the dialoge open `Network Printer` and click on `Find Network Printer`:
+
+![](docs/cups-find-network-printer.png)
+
+Now insert the IP (192.168.178.107 in my case) into the `Host:` field and click on `Find`. A huge list of network printers was found - spot for `Epson ET-4800 (192.168.178.107)` (__don't use the `IPP` variant__ [as stated in this post](https://bbs.archlinux.org/viewtopic.php?id=289205), it didn't work for me) and click `Forward`:
+
+![](docs/list-of-found-epson-network-printers.png)
+
+In the next 2 dialoges choose the correct driver (it should be pre-selected):
+
+![](docs/epson-printer-choose-driver.png)
+
+Now the `New Printer` should be wait for your `Apply`:
+
+![](docs/new-printer-epson-dialoge.png)
+
+Print the test page to see if the printer is working correctly.
+
+![](docs/epson-printer-test-page.jpg)
+
+Very cool, Epson!
+
+
 
 
 ## Balsamiq Mockups on Linux

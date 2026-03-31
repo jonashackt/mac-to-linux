@@ -401,14 +401,16 @@ https://github.com/romkatv/powerlevel10k
 * Unable to cancel a command on Gnome terminal? Have a look at https://unix.stackexchange.com/a/33017/140406 and delete every `Strg+C` keyboard shortcut in the Gnome terminal settings!
 
 
-### Install Tiling Terminal Tilix
+### Install Tiling Terminal Ghostty
 
-If you want a more advanced Tiling Terminal, have a look at Tilix:
+> I used tilix for a while when starting to migrate from Mac to Linux, but in 2025 tilix was removed from the extra repositories and hasn't been developed any further since over a year now. In search for a alternative, AI helped me with two options for popular tiling terminals:
+> Kitty https://github.com/kovidgoyal/kitty: A feature-packed, fast terminal aimed at power users. It has built-in image support, tabs, windows (splits), and is highly scriptable.
+> Ghostty https://github.com/ghostty-org/ghostty (Releases https://ghostty.org/docs/install/release-notes): The newcomer, written in Zig. It aims for the performance of Alacritty and features of Kitty, but with superior, modern font rendering and an easier, cleaner user experience right out of the box.
 
-https://gnunn1.github.io/tilix-web/
+I wanted the most modern experience and went with Ghostty:
 
 ```shell
-sudo pamac install tilix
+pamac install ghostty
 ```
 
 

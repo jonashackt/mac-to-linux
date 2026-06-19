@@ -430,6 +430,61 @@ fc -R .zhistory
 
 
 
+## Firefox
+
+I use Firefox as my main browser, regularly with ~200 tabs open. At that scale extension choice matters a lot — a single misbehaving add-on can saturate a CPU core via the shared `WebExtensions` process.
+
+### Diagnosing high CPU / fan noise
+
+The system monitor only shows a soup of `Isolated Web Content` processes. Use Firefox's built-in tooling instead:
+
+* `about:processes` — per-tab and per-extension CPU/RAM, with a kill button per process. The `WebExtensions` row names the actual add-on causing load.
+* `about:performance` — energy/CPU view sorted by tab.
+* `about:debugging#/runtime/this-firefox` — list of all installed extensions with an **Inspect** button. Opens DevTools (Console, Performance profiler, Network) in the extension's own context. Use this to see *why* an extension is busy (runaway background script, polling loop, hung network request).
+* `firefox --safe-mode` — start with all extensions disabled. Fastest way to split "is it a tab or an extension".
+
+I saw that my well-known-for-decades NoScript extension just ran wild! `DocStartInjection` errors spilled all over the console, when analysed via `about:debugging#/runtime/this-firefox` / `Inspect`:
+
+```shell
+DocStartInjection at https://rt.marphezis.com/sync?dpid=0&gdpr=1&gdpr_consent=CQiFQTAQiFQTA... 1023000 failed attempts so far... DocStartInjection.js:185:19
+DocStartInjection at https://ap.lijit.com/pixel?gdpr=1&gdpr_consent=CQiFQTAQiFQTAAcABBDECZ...%3D%24UID%26auxuid%3D 1018000 failed attempts so far... DocStartInjection.js:185:19
+DocStartInjection at https://rt.marphezis.com/sync?dpid=0&gdpr=1&gdpr_consent=CQiFQTAQiFQTAA...X-Bf8DAIGBAMGgYXAwy.f_wAAAAAAAAA 1024000 failed attempts so far... DocStartInjection.js:185:19
+```
+
+Thus I decided that it might be time to switch to a more CPU-friendly and modern solution: uBlock origin
+
+
+
+### Content blocking: uBlock Origin in Medium Mode
+
+I used to run **NoScript alongside uBlock Origin**. Don't — it's a known conflict: uBlock blocks tracker requests at the network layer, NoScript still sees a "document" and retries its `DocStartInjection` forever. In my case this produced over 1 million failed injection attempts per tracker URL and pinned the WebExtensions process at ~45% CPU.
+
+Switched to uBlock Origin alone in **Medium Mode** (3rd-party scripts and frames blocked by default, everything else allowed). One-time setup:
+
+1. Click uBlock icon → cog (Dashboard)
+2. **Settings** tab → enable **"I am an advanced user"**
+3. Close dashboard, open any page, click uBlock icon → the matrix view appears (two columns: global | this hostname)
+4. In the **global column**, click the upper half of the `3rd-party scripts` cell → turns **red** (blocked globally)
+5. Same for `3rd-party frames` → red
+6. Click the **padlock** at the top to persist the change
+
+Daily use:
+
+* If a page breaks (video doesn't load, login fails): click uBlock icon → in the right column (per-site), click the lower half of the offending host's cell → turns **green** (allowed for this site) → padlock to save.
+* To quickly test if uBlock is the cause: click the big **power icon** in the right column — fully disables uBlock for this site without writing a rule.
+
+Colours: red top = block, green bottom = allow, dark = explicit rule, light = inherited from global.
+
+Recommended extra filter lists (Dashboard → Filter lists): EasyPrivacy, Peter Lowe's Ad and tracking server list, AdGuard URL Tracking Protection.
+
+Reference: https://github.com/gorhill/uBlock/wiki/Blocking-mode:-medium-mode
+
+### Tab management at ~200 tabs
+
+* `about:config` → set `browser.tabs.unloadOnLowMemory = true` so Firefox unloads inactive tabs under memory pressure.
+* Extension **Auto Tab Discard** unloads tabs after N minutes of inactivity while keeping title and URL — drastically reduces baseline CPU/RAM.
+
+
 # Misc
 
 ## Small tweaks

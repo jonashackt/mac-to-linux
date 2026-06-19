@@ -57,6 +57,12 @@ mode = "type"
 dotool_xkb_layout = "de"
 ```
 
+There's also a super handy CLI-based configuration frontend, open it via:
+
+```shell
+voxtype configure
+```
+
 
 
 ## AI support for running local LLMs

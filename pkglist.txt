@@ -56,7 +56,6 @@ endeavour
 envycontrol
 epson-inkjet-printer-escpr
 epson-printer-utility
-epsonscan2
 evince
 evolution
 exfatprogs
@@ -273,7 +272,6 @@ reiserfsprogs
 remmina
 restic
 resticprofile-bin
-rocketchat-client-bin
 rsync
 rygel
 s-nail
@@ -291,7 +289,6 @@ spectre-meltdown-checker
 spotify
 squashfs-tools
 sshfs
-steam
 sublime-text-4
 sudo
 sushi

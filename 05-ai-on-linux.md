@@ -63,6 +63,67 @@ There's also a super handy CLI-based configuration frontend, open it via:
 voxtype configure
 ```
 
+### voxtype meeting: transcribe Meets/Zoom session locally
+
+A really cool feature is the [voxtype meeting mode](https://voxtype.io/docs/smoke_tests/meeting-mode), where you can record not only your audio - but also your whole system audio, which enables voxtype to transcribe e.g. your Zoom/Meets etc. meetings - and also phone calls.
+
+Here's how I configured it to work on Linux in the `~/.config/voxtype/config.toml`:
+
+```toml
+[meeting]
+enabled = true
+chunk_duration_secs = 15
+storage_path = "auto"
+retain_audio = false
+max_duration_mins = 180
+
+[meeting.audio]
+source = "system"
+mic_device = "default"
+loopback_device = "auto"
+echo_cancel = "auto"
+
+# Distinct between speakers
+[meeting.diarization]
+#enabled = false
+enabled = true
+backend = "simple"
+```
+
+Now you should be able to run `voxtype meeting start` like that:
+
+```shell
+voxtype meeting start --title "Architecture sync"
+```
+
+Verify, if the voxtype meeting is working:
+
+```shell
+voxtype meeting status
+# more details with 'show ID' 
+voxtype meeting show 658c98b1-bc7c-4a2c-9634-e7e8d1b907ef
+```
+
+Now if the meeting has finished, stop it and export the transcript as Markdown for further work:
+
+```shell
+voxtype meeting stop
+
+voxtype meeting export latest \                                                                                                                ✔
+  --format markdown \
+  --speakers \
+  --timestamps > meeting.md
+```
+
+
+I had the problem, that nothing was transcribed, even if the setup was seemingly working. I needed [to unmute a pactl sink](https://forums.linuxmint.com/viewtopic.php?t=382997):
+
+```shell
+pactl set-sink-mute @DEFAULT_SINK@ 0
+```
+
+With that my voxtype meeting sessions work really fine.
+
 
 
 ## AI support for running local LLMs

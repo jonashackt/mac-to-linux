@@ -107,6 +107,7 @@ voxtype meeting show 658c98b1-bc7c-4a2c-9634-e7e8d1b907ef
 Now if the meeting has finished, stop it and export the transcript as Markdown for further work:
 
 ```shell
+# YOU NEED TO STOP the meeting, before exporting it - otherwise the transcript is empty!!
 voxtype meeting stop
 
 voxtype meeting export latest \                                                                                                                ✔

@@ -375,6 +375,13 @@ Now my laptop seems to be finally silent (running in the lowest RPM level 1 acco
 ![](docs/auto-cpufreq-governor-override-cli-silent-thinkpad.png)
 
 
+### Switch the auto-cpufreq Governor from the Gnome top bar: auto-cpufreq-switcher
+
+Instead of typing `sudo auto-cpufreq --force powersave` every time, there's a small Gnome Shell extension, which lets you switch the governor override right from the Gnome top bar: https://extensions.gnome.org/extension/8320/auto-cpufreq-switcher/ (source: https://github.com/EBendinelli/auto-cpufreq-switcher)
+
+It's a simple governor switcher for auto-cpufreq. Requirements are an installed auto-cpufreq and Gnome Shell 48 - 51. Install it via the `Install` button on the extensions website (with the Gnome browser integration) or through the Gnome Extension Manager.
+
+
 
 
 ### Using Hybrid Mode instead of Integrated Graphics only

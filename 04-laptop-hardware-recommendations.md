@@ -191,6 +191,92 @@ See also: [Official NVIDIA Power Management Documentation](https://download.nvid
 
 
 
+## Finding the perfect Thunderbolt Dock for Linux – My journey to the Super Dock 🚀
+
+Coming from a MacBook Pro, I was used to a simple setup: **Connect a single Thunderbolt cable and everything just works.** External 4K monitor, Ethernet, webcam, microphone, keyboard, mouse and power delivery.
+
+Sounds simple, right? Well, welcome to Linux on a ThinkPad P1 Gen 6! 😅
+
+After trying three different docks, I finally found a promising solution.
+
+### Attempt #1: Belkin Thunderbolt 3 Dock Pro – No luck
+
+My first attempt was reusing my **Belkin Thunderbolt 3 Dock Pro** from my Mac setup.
+
+Unfortunately, I couldn't get it working properly with my ThinkPad running Manjaro Linux. So much for reusing perfectly good hardware.
+
+### Attempt #2: Wavlink USB-C 13-in-1 – Almost there...
+
+Next came a Wavlink USB-C 13-in-1 docking station. Initially, things looked promising. Most peripherals worked, including the external monitor and Ethernet.
+
+But I experienced two extremely annoying problems:
+
+- **Random Ethernet disconnects**, especially during Zoom and Google Meet calls. The dock used a Realtek RTL8153 USB Ethernet controller with the Linux `r8152` driver. Sometimes the network simply stopped working.
+- **Unreliable external display hotplugging**. After reconnecting the dock, I frequently had to unplug and reconnect the HDMI cable to get my LG 27UD88-W 4K monitor working again.
+
+A dock that randomly disconnects your network during customer meetings? Not exactly what I had in mind.
+
+### Attempt #3: Lenovo ThinkPad Thunderbolt 5 Smart Dock 7500 – The Super Dock! 🎉
+
+After researching alternatives, including Lenovo's Thunderbolt 4 docks, Dell's TB5 docks and CalDigit, I finally chose the [Lenovo ThinkPad Thunderbolt 5 Smart Dock 7500 (40BA)](https://support.lenovo.com/de/de/accessories/acc500405).
+
+Yes, **Thunderbolt 5 – even though my ThinkPad P1 Gen 6 only supports Thunderbolt 4!** Thunderbolt is backward-compatible, so the dock negotiates a compatible connection.
+
+And here's what I really like about this thing:
+
+- **Single-cable setup:** My external 4K/60Hz monitor, Logitech MX Brio webcam, Rode NT-USB+ microphone, keyboard, mouse and Ethernet are connected through one Thunderbolt cable.
+- **USB-C video output:** My LG 27UD88-W works directly through a downstream Thunderbolt USB-C port. No HDMI adapter needed.
+- **Native PCIe Ethernet:** Instead of relying exclusively on USB Ethernet, the dock exposes an **Intel I226-LMvP 2.5GbE controller over Thunderbolt PCIe tunneling**, using Linux's `igc` driver.
+- **Linux-friendly:** Lenovo provides Linux compatibility information and firmware support through the `fwupd`/LVFS ecosystem.
+- **Thunderbolt 4 compatibility:** No Thunderbolt 5 laptop required to use it.
+
+#### The biggest surprise: Real PCIe Ethernet!
+
+This is probably my favorite discovery.
+
+Check the Ethernet controllers:
+
+```bash
+lspci -nnk | grep -A 4 -Ei 'Ethernet controller'
+```
+
+On my ThinkPad, the Lenovo dock exposes:
+
+```text
+25:00.0 Ethernet controller: Intel Corporation Ethernet Controller I226-LMvP [8086:5503]
+        Subsystem: Lenovo Device [17aa:234e]
+        Kernel driver in use: igc
+        Kernel modules: igc
+```
+
+**That's PCIe Ethernet via Thunderbolt, not another Realtek USB Ethernet adapter!**
+
+The `igc` driver supports the Intel I226 controller directly. This avoids the USB-Ethernet path that caused trouble with my previous Wavlink dock.
+
+To verify which network interface is actually carrying your traffic:
+
+```bash
+ip -4 route get 1.1.1.1
+nmcli -f DEVICE,TYPE,STATE,CONNECTION device status
+```
+
+Note that PCIe Ethernet doesn't guarantee perfect stability, but it eliminates one potential source of USB-related disconnects.
+
+### Verdict (November 2026)
+
+| Dock | Linux experience | Verdict |
+|---|---|---|
+| Belkin Thunderbolt 3 Dock Pro | Didn't work properly with my ThinkPad | ❌ |
+| Wavlink USB-C 13-in-1 | Ethernet disconnects and unreliable HDMI hotplugging | ⚠️ |
+| Lenovo ThinkPad Thunderbolt 5 Smart Dock 7500 | Single-cable setup works, native Intel PCIe Ethernet, 4K USB-C video | ✅ Promising winner |
+
+**My recommendation:** If you're running a Linux ThinkPad and want a serious docking station, the Lenovo Thunderbolt 5 Smart Dock 7500 is definitely worth considering – even with a Thunderbolt 4 laptop.
+
+My biggest lesson: **Don't just check the ports on a dock. Check the controllers inside it and their Linux drivers!**
+
+*Now let's see whether it survives a few weeks of real-world meetings, suspend/resume cycles and daily docking.* 😎
+
+
 
 
 

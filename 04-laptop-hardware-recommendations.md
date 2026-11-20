@@ -101,6 +101,98 @@ Sadly it seems that my Thinkpad P1 has hard-wired USB-C/Thunderbold and HDMI por
 https://www.reddit.com/r/thinkpad/comments/yv9viy/thinkpad_p1_gen_5_with_nvidia_disabled_external
 
 
+### Fix NVIDIA external display freeze after suspend (GNOME Wayland)
+
+On my **ThinkPad P1 Gen 6** (RTX 4060, Manjaro Kernel 6.18.55, NVIDIA proprietary driver 615.71.09, GNOME Wayland), the external 4K monitor frequently froze after resuming from suspend (`s2idle`). The internal Intel-driven display continued working, while the NVIDIA-driven external display stopped updating – independent of the connected Thunderbolt dock.
+
+Kernel logs revealed:
+
+```text
+sudo journalctl -k -b --since "20 minutes ago" \
+  --no-pager \
+  | grep -Ei 'NVRM|nvidia|drm|Xid|atomic|hung task|timeout|thunderbolt' \
+  | tail -n 100
+
+[nvidia-drm] Flip event timeout on head 0
+[nvidia-drm] Failed to initialize semaphore for plane fence
+[nvidia-drm] Failed to apply atomic modeset. Error code: -11
+```
+
+Similar NVIDIA issues:
+- [#1476 – Plane fence semaphore / atomic modeset failure](https://github.com/NVIDIA/open-gpu-kernel-modules/issues/1476)
+- [#1361 – NVIDIA 615.71.09 flip event timeout regression](https://github.com/NVIDIA/open-gpu-kernel-modules/issues/1361)
+- [#1380 – External display fails after suspend with USB-C dock](https://github.com/NVIDIA/open-gpu-kernel-modules/issues/1380)
+
+#### Solution: Switch to NVIDIA's classic systemd suspend mechanism
+
+Manjaro's `nvidia-utils` config enabled kernel suspend notifiers by default:
+
+```ini
+options nvidia NVreg_UseKernelSuspendNotifiers=1
+```
+
+The NVIDIA suspend/resume services were already enabled and executing successfully, but the external display still failed after resume.
+
+**Fix:** Disable kernel suspend notifiers and explicitly preserve all VRAM allocations using NVIDIA's `/proc/driver/nvidia/suspend` mechanism.
+
+First, inspect existing configuration:
+
+```bash
+sudo grep -RInE \
+'NVreg_(UseKernelSuspendNotifiers|PreserveVideoMemoryAllocations|TemporaryFilePath)' \
+/etc/modprobe.d /usr/lib/modprobe.d 2>/dev/null
+```
+
+Override the package configuration without modifying `/usr/lib`:
+
+```bash
+sudo cp /usr/lib/modprobe.d/nvidia-utils.conf \
+  /etc/modprobe.d/nvidia-utils.conf
+
+sudo nano /etc/modprobe.d/nvidia-utils.conf
+```
+
+Change/add these options while preserving the other existing settings:
+
+```ini
+options nvidia NVreg_UseKernelSuspendNotifiers=0
+options nvidia NVreg_PreserveVideoMemoryAllocations=1
+options nvidia NVreg_TemporaryFilePath=/var/tmp
+```
+
+Ensure `/var/tmp` has sufficient free space (GPU VRAM size + ~5%) and the existing NVIDIA suspend/resume systemd services remain enabled.
+
+Rebuild initramfs (using `mkinitcpio`) and reboot:
+
+```bash
+sudo mkinitcpio -P
+sudo reboot
+```
+
+Verify the active configuration:
+
+```bash
+grep -Ei \
+'UseKernelSuspendNotifiers|PreserveVideoMemoryAllocations|TemporaryFilePath' \
+/proc/driver/nvidia/params
+```
+
+Expected values:
+
+```text
+UseKernelSuspendNotifiers: 0
+PreserveVideoMemoryAllocations: 1
+TemporaryFilePath: "/var/tmp"
+```
+
+**Result (November 20, 2026):** The first suspend/resume test completed successfully, with the external display working normally again. Promising workaround, but long-term stability still needs verification.
+
+See also: [Official NVIDIA Power Management Documentation](https://download.nvidia.com/XFree86/Linux-x86_64/615.71.09/README/powermanagement.html).
+
+
+
+
+
 
 # Getting your laptop silent & prolong battery life
 

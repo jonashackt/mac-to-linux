@@ -55,44 +55,7 @@ No need to do anything here, since the Mesa drivers are already installed - they
 
 ## Install NVidia driver
 
-https://wiki.manjaro.org/index.php/Configure_Graphics_Cards
-
-For me the command `foo` didn't work as expected:
-
-```shell
-sudo mhwd -a pci nonfree 0300
-> Using config 'video-nvidia' for device: 0000:2d:00.0 (0300:10de:2504) Display controller nVidia Corporation GA106 [GeForce RTX 3060 Lite Hash Rate]
-> Installing video-nvidia...
-Sourcing /etc/mhwd-x86_64.conf
-Has lib32 support: true
-Sourcing /var/lib/mhwd/db/pci/graphic_drivers/nvidia/MHWDCONFIG
-Processing classid: 0300
-Sourcing /var/lib/mhwd/scripts/include/0300
-Processing classid: 0302
-:: Synchronizing package databases...
- core downloading...
- extra downloading...
- multilib downloading...
-error: target not found: linux65-nvidia
-Error: pacman failed!
-Error: script failed!
-```
-
-So I used the package manager to install the matching nvidia driver for my kernel version.
-
-List your kernel version using `mhwd-kernel -li`:
-
-```shell
-Currently running: 6.6.19-1-MANJARO (linux66)
-The following kernels are installed in your system:
-   * linux65
-   * linux66
-```
-
-Now install the `linux66-nvidia` package using pamac. Also `nvidia-settings` comes in handy as a GUI for your Nvidia card's settings, temperature etc.
-
-
-## External display support without dGPU
+### External display support without dGPU
 
 Check before you buy! If you can disable the dGPU for longer battery life and still be able to use external displays. 
 
@@ -101,7 +64,306 @@ Sadly it seems that my Thinkpad P1 has hard-wired USB-C/Thunderbold and HDMI por
 https://www.reddit.com/r/thinkpad/comments/yv9viy/thinkpad_p1_gen_5_with_nvidia_disabled_external
 
 
+### Prefer NVIDIA Open Kernel Modules over the proprietary driver
+
+Since the NVIDIA 560 driver series, NVIDIA officially recommends
+using the **Open GPU Kernel Modules** for supported GPUs
+(Turing, Ampere, Ada Lovelace and newer architectures).
+
+See NVIDIA's announcement:
+[NVIDIA Transitions Fully Towards Open-Source GPU Kernel Modules](https://developer.nvidia.com/blog/nvidia-transitions-fully-towards-open-source-gpu-kernel-modules/)
+
+The official documentation also explicitly recommends this approach:
+[Open Linux Kernel Modules](https://download.nvidia.com/XFree86/Linux-x86_64/620.70.06/README/kernel_open.html)
+
+> We recommend the use of open kernel modules on all GPUs that support it.
+
+Don't confuse NVIDIA Open with Nouveau! NVIDIA Open is NVIDIA's
+official driver with MIT/GPLv2-licensed kernel modules, while
+retaining the same NVIDIA userspace components.
+
+This means you still get:
+
+- Full CUDA support for local AI workloads
+- GPU-accelerated speech recognition (e.g. Voxtype)
+- Ollama, PyTorch and llama.cpp with CUDA
+- Vulkan and OpenGL
+- GNOME Wayland and PRIME GPU offloading
+- nvidia-smi and NVIDIA Container Toolkit
+
+There are even additional features exclusive to the open kernel
+modules, such as Heterogeneous Memory Management (HMM) and
+DMA-BUF support for CUDA allocations.
+
+The source code is available at:
+https://github.com/NVIDIA/open-gpu-kernel-modules
+
+
+#### Why I switched to NVIDIA Open
+
+On my ThinkPad P1 Gen 6 with an NVIDIA RTX 4060 Laptop GPU,
+Manjaro Linux and GNOME Wayland, I experienced recurring
+external display freezes when disconnecting or reconnecting
+my Thunderbolt dock, especially around suspend/resume cycles.
+
+The kernel logs repeatedly showed errors like:
+
+```
+[nvidia-drm] Flip event timeout on head 0
+[nvidia-drm] Lost display notification
+[nvidia-drm] Failed to initialize semaphore for plane fence
+[nvidia-drm] Failed to apply atomic modeset. Error code: -11
+```
+
+Sometimes only the external display froze, while the internal
+Intel-driven display continued working. Sometimes the entire
+graphical session became unresponsive.
+
+Updating the NVIDIA driver from 615.71.09 to 620.70.06,
+updating the ThinkPad and Thunderbolt dock firmware,
+changing NVIDIA suspend parameters and switching from
+USB-C to DisplayPort did not resolve the issue.
+
+So instead of tweaking the proprietary driver even further,
+I switched to NVIDIA's Open Kernel Modules.
+
+An important difference is how GPU state and video memory
+are preserved during suspend and resume.
+
+According to the official
+[NVIDIA Power Management Documentation](https://download.nvidia.com/XFree86/Linux-x86_64/620.70.06/README/powermanagement.html),
+video memory preservation is handled automatically when
+using the open kernel modules.
+
+
+#### Switch from proprietary NVIDIA to NVIDIA Open on Manjaro
+
+First check which kernel module flavor Manjaro recommends
+for your hardware:
+
+```bash
+nvidia-driver-assistant --mhwd
+```
+
+On my ThinkPad P1 Gen 6 with the RTX 4060, this returned:
+
+```
+open
+```
+
+Check your currently installed kernels and NVIDIA packages:
+
+```bash
+mhwd-kernel -li
+mhwd -li
+pacman -Q | grep nvidia
+```
+
+Also check whether GSP firmware has been explicitly disabled
+in your module configuration (NVIDIA Open requires GSP):
+
+```bash
+modprobe -c | grep -i EnableGpuFirmware
+```
+
+Make sure the open kernel modules are available for all
+your installed kernels and match your NVIDIA userspace
+driver version.
+
+In my case, Linux 6.12 LTS and Linux 6.18 were installed:
+
+```bash
+pacman -Si linux618-nvidia-open linux612-nvidia-open
+```
+
+Switch both kernels to NVIDIA Open in a single transaction:
+
+```bash
+sudo pacman -S linux618-nvidia-open linux612-nvidia-open
+```
+
+Pacman will ask whether to remove the conflicting
+proprietary kernel module packages:
+
+```
+linux618-nvidia
+linux612-nvidia
+```
+
+Confirm both removals.
+
+There is no need to replace `nvidia-utils`,
+`lib32-nvidia-utils`, `nvidia-settings`, CUDA libraries
+or `nvidia-prime`.
+
+I also kept my existing MHWD profile:
+
+```
+video-hybrid-intel-nvidia-prime
+```
+
+Pacman automatically rebuilt the initramfs images for
+both installed kernels on my system.
+
+Now check the newly installed kernel module:
+
+```bash
+modinfo -F license nvidia
+```
+
+This should return:
+
+```
+Dual MIT/GPL
+```
+
+Finally reboot:
+
+```bash
+sudo reboot
+```
+
+
+#### Verify NVIDIA Open after reboot
+
+Check which kernel module is actually running:
+
+```bash
+cat /proc/driver/nvidia/version
+nvidia-smi
+```
+
+The output should now contain:
+
+```
+NVRM version: NVIDIA UNIX Open Kernel Module for x86_64
+```
+
+Also check the active suspend-related module parameters:
+
+```bash
+grep -Ei 'SuspendNotifiers|PreserveVideoMemory|TemporaryFilePath' \
+  /proc/driver/nvidia/params
+```
+
+With the Manjaro package defaults and NVIDIA 620.70.06,
+my configuration looks like this:
+
+```
+PreserveVideoMemoryAllocations: 2
+UseKernelSuspendNotifiers: 1
+TemporaryFilePath: "/var/tmp"
+```
+
+If you previously created custom NVIDIA suspend overrides
+in `/etc/modprobe.d/`, check whether these are still needed.
+
+In my case, I removed my previous local override of
+`nvidia-utils.conf` to restore the Manjaro package defaults.
+
+
+#### Suspend and resume with NVIDIA Open
+
+Interestingly, Manjaro already handles the different
+suspend mechanisms of the proprietary and open NVIDIA
+kernel modules.
+
+Check the systemd service configuration:
+
+```bash
+systemctl cat nvidia-suspend.service nvidia-resume.service
+```
+
+On my system, both services contain:
+
+```
+ExecCondition=/bin/sh -c "/usr/bin/modinfo -F license nvidia | grep -q 'NVIDIA'"
+```
+
+This means that the classic NVIDIA suspend/resume scripts
+are only executed when using the proprietary kernel module.
+
+With NVIDIA Open, these services are automatically skipped.
+There is no need to disable them manually.
+
+After a suspend/resume cycle, verify this using:
+
+```bash
+journalctl -b \
+  -u nvidia-suspend.service \
+  -u nvidia-resume.service \
+  --no-pager
+```
+
+The expected result on my Manjaro installation:
+
+```
+nvidia-suspend.service: Skipped due to 'exec-condition'.
+nvidia-resume.service: Skipped due to 'exec-condition'.
+```
+
+This is expected behavior, not an error!
+
+
+#### First results (November 25, 2026)
+
+My current setup:
+
+| Component | Configuration |
+|---|---|
+| Laptop | ThinkPad P1 Gen 6 |
+| GPU | NVIDIA RTX 4060 Laptop GPU |
+| Linux distribution | Manjaro |
+| Kernel | 6.18.63-3-MANJARO |
+| NVIDIA driver | Open Kernel Module 620.70.06 |
+| Desktop | GNOME Wayland |
+| Dock | Lenovo Thunderbolt 5 Smart Dock 7500 |
+| Dock firmware | 1.2.0.6 |
+| Monitor | LG 27UD88-W, 4K @ 60 Hz |
+| Monitor connection | USB-C via Thunderbolt dock |
+| Custom NVIDIA module overrides | None |
+
+The first dock hotplug and suspend/resume cycle completed
+successfully after switching to NVIDIA Open.
+
+No NVIDIA flip timeouts, no atomic modeset errors and
+no frozen external display!
+
+And I could return to my original single-cable
+Thunderbolt docking setup.
+
+For live debugging, I used:
+
+```bash
+sudo journalctl -kf | grep --line-buffered -Ei \
+'nvidia|drm|NVRM|PM: suspend|thunderbolt'
+```
+
+**My recommendation: Use NVIDIA Open Kernel Modules on
+modern NVIDIA GPUs unless you have a specific reason
+to stick with the proprietary kernel modules.**
+
+This is now NVIDIA's recommended driver architecture
+anyway, and you don't have to sacrifice CUDA support
+for your local AI workloads.
+
+Long-term stability still needs verification, but
+the first results are very promising.
+
+
 ### Fix NVIDIA external display freeze after suspend (GNOME Wayland)
+
+> [!IMPORTANT]
+> **Update November 25, 2026:** Unfortunately, the workaround
+> described below did not resolve the display freezes permanently.
+>
+> I have since restored the Manjaro package defaults and switched
+> to NVIDIA Open Kernel Modules, with promising initial results.
+>
+> See [Prefer NVIDIA Open Kernel Modules over the proprietary driver](#prefer-nvidia-open-kernel-modules-over-the-proprietary-driver)
+> for my current recommendation and installation instructions.
+>
+> The original workaround is retained below for reference.
 
 On my **ThinkPad P1 Gen 6** (RTX 4060, Manjaro Kernel 6.18.55, NVIDIA proprietary driver 615.71.09, GNOME Wayland), the external 4K monitor frequently froze after resuming from suspend (`s2idle`). The internal Intel-driven display continued working, while the NVIDIA-driven external display stopped updating – independent of the connected Thunderbolt dock.
 
